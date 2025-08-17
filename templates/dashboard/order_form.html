@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ title|default:'إضافة طلب' }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">{{ title|default:'إضافة طلب' }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">{{ form.customer_name.label }}</label>
+      {{ form.customer_name }}
+      {% for e in form.customer_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ form.total.label }}</label>
+      {{ form.total }}
+      {% for e in form.total.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ form.status.label }}</label>
+      {{ form.status }}
+      {% for e in form.status.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <button class="btn btn-primary" type="submit">حفظ</button>
+    <a class="btn btn-secondary" href="{% url 'dashboard:orders_list' %}">إلغاء</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}تسجيل الدخول{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width: 420px;">
+  <h2 class="mb-3">تسجيل الدخول</h2>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
+    <button type="submit" class="btn btn-primary">دخول</button>
+  </form>
+</div>
+{% endblock %}

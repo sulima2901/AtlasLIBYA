@@ -1,0 +1,92 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}المنتجات{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <a href="{% url 'dashboard:export_products_csv' %}" class="btn btn-success mb-3">
+      <i class="bi bi-file-earmark-excel"></i> تصدير المنتجات إلى Excel/CSV
+  </a>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">المنتجات</h2>
+    <a class="btn btn-primary" href="{% url 'dashboard:product_create' %}">+ إضافة منتج</a>
+  </div>
+
+  <form class="mb-3 d-flex" method="get">
+    <input type="search" class="form-control me-2" name="q" placeholder="ابحث عن منتج..." value="{{ query|default_if_none:'' }}">
+    <button class="btn btn-outline-primary" type="submit">بحث</button>
+  </form>
+  <form class="mb-3 d-flex align-items-center" method="get">
+    <input type="search" class="form-control me-2" name="q" placeholder="ابحث عن منتج..." value="{{ query|default_if_none:'' }}">
+    <select name="active" class="form-select me-2" style="width:160px;">
+        <option value="">كل الحالات</option>
+        <option value="yes" {% if active == "yes" %}selected{% endif %}>مفعّل فقط</option>
+        <option value="no" {% if active == "no" %}selected{% endif %}>غير مفعّل فقط</option>
+    </select>
+    <button class="btn btn-outline-primary" type="submit">بحث/فلترة</button>
+  </form>
+
+  {% if products %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>الاسم</th>
+            <th>السعر</th>
+            <th>الخصم %</th>
+            <th>المخزون</th>
+            <th>مفعّل</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.price }}</td>
+            <td>{{ p.discount_percent }}</td>
+            <td>{{ p.stock }}</td>
+            <td>{% if p.is_active %}<span class="badge bg-success">نعم</span>{% else %}<span class="badge bg-secondary">لا</span>{% endif %}</td>
+            <td>
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:product_update' p.id %}">تعديل</a>
+              <form method="post" action="{% url 'dashboard:product_delete' p.id %}" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف المنتج؟')">حذف</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination block start -->
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+        {% if products.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&active={{ active }}&page={{ products.previous_page_number }}" aria-label="السابق"><span aria-hidden="true">&laquo;</span></a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+        {% endif %}
+        {% for num in products.paginator.page_range %}
+          {% if products.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" href="?q={{ query }}&active={{ active }}&page={{ num }}">{{ num }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if products.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&active={{ active }}&page={{ products.next_page_number }}" aria-label="التالي"><span aria-hidden="true">&raquo;</span></a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    <!-- Pagination block end -->
+  {% else %}
+    <div class="alert alert-light">لا توجد منتجات بعد</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}تم تسجيل الخروج{% endblock %}
+
+{% block content %}
+<div class="alert alert-info text-center mt-5">
+    <h2>تم تسجيل الخروج بنجاح</h2>
+    <p>شكراً لاستخدامك الموقع.</p>
+    <a href="{% url 'accounts:login' %}" class="btn btn-primary mt-3">تسجيل الدخول من جديد</a>
+</div>
+{% endblock %}

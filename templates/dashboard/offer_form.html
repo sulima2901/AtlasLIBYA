@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}إضافة عرض{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">إضافة عرض</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">{{ form.product.label }}</label>
+      {{ form.product }}
+      {% for e in form.product.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ form.discount_percent.label }}</label>
+      {{ form.discount_percent }}
+      {% for e in form.discount_percent.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="form-check mb-3">
+      {{ form.active }} <label class="form-check-label ms-1">{{ form.active.label }}</label>
+      {% for e in form.active.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <button class="btn btn-primary" type="submit">حفظ</button>
+    <a class="btn btn-secondary" href="{% url 'dashboard:offers_list' %}">إلغاء</a>
+  </form>
+</div>
+{% endblock %}

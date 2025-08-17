@@ -1,0 +1,109 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}الصفحة الرئيسية{% endblock %}
+{% block content %}
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card text-bg-primary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fs-6">المنتجات</div>
+              <div class="fs-2 fw-bold">{{ counts.products }}</div>
+            </div>
+            <i class="bi bi-box-seam display-6"></i>
+          </div>
+        </div>
+        <div class="card-footer bg-opacity-25">
+          <a class="text-white text-decoration-none" href="{% url 'dashboard:products_list' %}">إدارة المنتجات</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card text-bg-success h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fs-6">الطلبات</div>
+              <div class="fs-2 fw-bold">{{ counts.orders }}</div>
+            </div>
+            <i class="bi bi-bag-check display-6"></i>
+          </div>
+        </div>
+        <div class="card-footer bg-opacity-25">
+          <a class="text-white text-decoration-none" href="{% url 'dashboard:orders_list' %}">إدارة الطلبات</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card text-bg-warning h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fs-6">العروض</div>
+              <div class="fs-2 fw-bold">{{ counts.offers }}</div>
+            </div>
+            <i class="bi bi-percent display-6"></i>
+          </div>
+        </div>
+        <div class="card-footer bg-opacity-25">
+          <a class="text-white text-decoration-none" href="{% url 'dashboard:offers_list' %}">إدارة العروض</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card text-bg-secondary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fs-6">المستخدمون</div>
+              <div class="fs-2 fw-bold">{{ counts.users }}</div>
+            </div>
+            <i class="bi bi-people display-6"></i>
+          </div>
+        </div>
+        <div class="card-footer bg-opacity-25">
+          <a class="text-white text-decoration-none" href="{% url 'dashboard:users_list' %}">إدارة المستخدمين</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>أحدث الطلبات</span>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:order_create' %}">+ إضافة طلب</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>العميل</th>
+            <th>الإجمالي</th>
+            <th>الحالة</th>
+            <th>التاريخ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in latest_orders %}
+            <tr>
+              <td>{{ order.id }}</td>
+              <td>{{ order.customer_name }}</td>
+              <td>{{ order.total_amount }} د.ل</td>
+              <td>{{ order.get_status_display }}</td>
+              <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+              <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:order_update' order.id %}">تعديل</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">لا توجد طلبات بعد</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

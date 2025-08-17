@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}المنتجات{% endblock %}
+{% block content %}
+
+<div class="container py-4">
+  <h1 class="mb-4">كل المنتجات</h1>
+  <form method="get" class="row mb-3 gy-2 gx-2 align-items-center">
+    <div class="col-auto">
+      <input type="search" name="q" class="form-control" placeholder="ابحث عن منتج..." value="{{ request.GET.q }}">
+    </div>
+    <div class="col-auto">
+      <select name="category" class="form-select">
+        <option value="">كل التصنيفات</option>
+        {% for cat in categories %}
+          <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <select name="sort" class="form-select">
+        <option value="">الترتيب</option>
+        <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>الأرخص أولاً</option>
+        <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>الأغلى أولاً</option>
+        <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>الأحدث</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary">بحث/فرز</button>
+    </div>
+  </form>
+
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for product in products %}
+    <div class="col">
+      <div class="card h-100">
+        <a href="{% url 'products:product_detail' product.slug %}">
+          <img src="{{ product.images.first.image.url }}" class="card-img-top" alt="{{ product.images.first.alt_text|default:product.name }}">
+        </a>
+        <div class="card-body">
+          <h5 class="card-title mb-1">
+            <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none text-dark">{{ product.name }}</a>
+          </h5>
+          <div class="mb-2">
+            {% if product.discount_percent %}
+              <span class="text-danger fw-bold">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
+              <del class="text-muted small">{{ product.price }} د.ل</del>
+              <span class="badge bg-warning text-dark">خصم {{ product.discount_percent }}%</span>
+            {% else %}
+              <span class="fw-bold">{{ product.price }} د.ل</span>
+            {% endif %}
+          </div>
+          {% if product.stock > 0 %}
+            <span class="badge bg-success">متوفر</span>
+          {% else %}
+            <span class="badge bg-secondary">غير متوفر</span>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-white border-0 text-center">
+          <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-primary btn-sm">تفاصيل</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+      <div class="col">
+        <div class="alert alert-info">لا توجد منتجات</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if products.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ products.previous_page_number }}">&laquo;</a>
+        </li>
+      {% endif %}
+      {% for num in products.paginator.page_range %}
+        {% if products.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if products.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ products.next_page_number }}">&raquo;</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endblock %}

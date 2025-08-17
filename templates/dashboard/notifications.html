@@ -1,0 +1,28 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}الإشعارات{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>الإشعارات</h3>
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="action" value="mark_all_read">
+    <button class="btn btn-outline-primary">تعليم الكل كمقروء</button>
+  </form>
+</div>
+<ul class="list-group">
+  {% for n in notifications %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span class="text-{{ n.level }}">{{ n.message }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <small class="text-muted">{{ n.created_at|date:"Y-m-d H:i" }}</small>
+        {% if not n.is_read %}
+          <a class="btn btn-sm btn-outline-success" href="{% url 'dashboard:notification_mark_read' n.id %}">تعليم كمقروء</a>
+        {% else %}
+          <span class="badge bg-secondary">مقروء</span>
+        {% endif %}
+      </div>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">لا توجد إشعارات</li>
+  {% endfor %}
+</ul>
+{% endblock %}

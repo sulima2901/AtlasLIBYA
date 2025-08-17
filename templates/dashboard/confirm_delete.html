@@ -1,0 +1,12 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}تأكيد الحذف{% endblock %}
+{% block content %}
+<div class="alert alert-warning">
+  هل أنت متأكد من حذف {{ type }}: <strong>{{ object }}</strong>؟
+</div>
+<form method="post">
+  {% csrf_token %}
+  <button class="btn btn-danger">نعم، حذف</button>
+  <a class="btn btn-secondary" href="javascript:history.back()">إلغاء</a>
+</form>
+{% endblock %}

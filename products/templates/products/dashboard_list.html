@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>إدارة المنتجات</h1>
+<a href="{% url 'products:add_product' %}">إضافة منتج جديد</a>
+<table>
+  <tr>
+    <th>اسم المنتج</th>
+    <th>السعر</th>
+    <th>التصنيف</th>
+    <th>نشط؟</th>
+    <th>تعديل</th>
+  </tr>
+  {% for product in products %}
+  <tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.price }}</td>
+    <td>{{ product.category.name }}</td>
+    <td>{% if product.is_active %}✔️{% else %}❌{% endif %}</td>
+    <td>
+      <a href="{% url 'products:edit_product' product.id %}">تعديل</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
