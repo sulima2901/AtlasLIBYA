@@ -1,0 +1,83 @@
+{% load static %}
+<div class="product-card-modern">
+  <!-- صورة المنتج مع أيقونة القلب -->
+  <div class="product-card-image-wrapper position-relative">
+    <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none">
+      {% if product.images.first %}
+        <img src="{{ product.images.first.image.url }}" class="product-card-image" alt="{{ product.name }}">
+      {% else %}
+        <img src="{% static 'core/no_image.png' %}" class="product-card-image" alt="لا توجد صورة">
+      {% endif %}
+    </a>
+    
+    {% if show_heart %}
+      <!-- أيقونة القلب للمفضلة -->
+      <button class="favorite-btn position-absolute{% if request.user.is_authenticated and product.id in user_favorites %} active{% endif %}" 
+              data-product-id="{{ product.id }}"
+              style="top: 12px; left: 12px; z-index: 10;"
+              {% if not request.user.is_authenticated %}onclick="alert('يرجى تسجيل الدخول لإضافة المنتجات للمفضلة')"{% endif %}>
+        <i class="bi bi-heart{% if request.user.is_authenticated and product.id in user_favorites %}-fill{% endif %}"></i>
+      </button>
+    {% endif %}
+
+    <!-- الشارات -->
+    <div class="product-badges position-absolute" style="top: 12px; right: 12px;">
+      {% if product.is_new %}
+        <span class="badge bg-success mb-1 d-block">جديد</span>
+      {% endif %}
+      {% if product.is_on_offer or product.discount_percent %}
+        <span class="badge bg-danger d-block">عرض</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- محتوى البطاقة -->
+  <div class="product-card-body">
+    <h6 class="product-card-title">
+      <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none text-dark">
+        {{ product.name }}
+      </a>
+    </h6>
+    
+    <!-- معلومات المنتج -->
+    <div class="product-card-meta mb-2">
+      {% if product.brand %}
+        <small class="text-muted">{{ product.brand }}</small>
+      {% endif %}
+    </div>
+
+    <!-- الأسعار -->
+    <div class="product-card-price mb-3">
+      {% if product.is_on_offer and product.offer_price %}
+        <span class="price-current text-danger fw-bold">{{ product.offer_price|floatformat:2 }} د.ل</span>
+        <span class="price-old text-muted">{{ product.price|floatformat:2 }} د.ل</span>
+        <span class="discount-badge">-{{ product.get_discount_percent }}%</span>
+      {% elif product.discount_percent %}
+        <span class="price-current text-danger fw-bold">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
+        <span class="price-old text-muted">{{ product.price|floatformat:2 }} د.ل</span>
+        <span class="discount-badge">-{{ product.discount_percent }}%</span>
+      {% else %}
+        <span class="price-current fw-bold">{{ product.price|floatformat:2 }} د.ل</span>
+      {% endif %}
+    </div>
+
+    <!-- الحالة والأزرار -->
+    <div class="product-card-actions d-flex align-items-center justify-content-between">
+      {% if product.stock > 0 %}
+        <span class="badge bg-success">متوفر</span>
+        <form action="{% url 'products:add_to_cart' product.id %}" method="post" class="d-inline">
+          {% csrf_token %}
+          <input type="hidden" name="qty" value="1">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-cart-plus me-1"></i>إضافة
+          </button>
+        </form>
+      {% else %}
+        <span class="badge bg-secondary">غير متوفر</span>
+        <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-secondary btn-sm">
+          عرض التفاصيل
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,6 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Product, Category
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import Product, Category, Favorite
+import json
 
 # قائمة المنتجات العامة
 def products_list(request):
@@ -87,3 +91,36 @@ def update_cart(request, pk):
     _save_cart(request, cart)
     messages.success(request, "تم تحديث الكمية.")
     return redirect('products:view_cart')
+
+# ============ المفضلة ============
+@require_POST
+@login_required
+def toggle_favorite(request):
+    """تبديل حالة المفضلة للمنتج"""
+    try:
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        
+        product = get_object_or_404(Product, id=product_id, is_active=True)
+        favorite, created = Favorite.objects.get_or_create(
+            user=request.user,
+            product=product
+        )
+        
+        if not created:
+            favorite.delete()
+            is_favorite = False
+        else:
+            is_favorite = True
+            
+        return JsonResponse({
+            'success': True,
+            'is_favorite': is_favorite,
+            'message': 'تمت إضافة المنتج للمفضلة' if is_favorite else 'تمت إزالة المنتج من المفضلة'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'حدث خطأ في العملية'
+        }, status=400)

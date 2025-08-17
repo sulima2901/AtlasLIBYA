@@ -44,3 +44,164 @@ h3, .h3{ font-size:clamp(1.15rem, 1.2vw + .8rem, 1.35rem); }
 
 .badge{ border-radius: 999px; }
 .card{ border-radius: var(--radius); }
+
+/* ===== تصميم البطاقات الحديثة ===== */
+.product-card-modern {
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,.05);
+  transition: all .3s ease;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.product-card-modern:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.12);
+}
+
+.product-card-image-wrapper {
+  overflow: hidden;
+  height: 200px;
+  background: #f8f9fa;
+}
+
+.product-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .3s ease;
+}
+
+.product-card-modern:hover .product-card-image {
+  transform: scale(1.05);
+}
+
+.product-card-body {
+  padding: 1rem;
+}
+
+.product-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  height: 2.8rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.product-card-price .price-current {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.product-card-price .price-old {
+  font-size: 0.85rem;
+  text-decoration: line-through;
+  margin-right: 8px;
+}
+
+.product-card-price .discount-badge {
+  background: #dc3545;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+/* ===== أيقونة القلب للمفضلة ===== */
+.favorite-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.favorite-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.favorite-btn.active {
+  background: #dc3545;
+  color: white;
+}
+
+.favorite-btn.active:hover {
+  background: #c82333;
+}
+
+/* ===== الشرائح المنتجة ===== */
+.product-carousel-wrapper {
+  overflow: hidden;
+  margin: 0 -12px;
+}
+
+.product-carousel {
+  display: flex;
+  gap: 24px;
+  padding: 12px;
+  transition: transform .5s ease;
+  will-change: transform;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #6c757d;
+  transition: all .3s ease;
+}
+
+.carousel-btn:hover {
+  background: #0d6efd;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn-prev {
+  right: -24px;
+}
+
+.carousel-btn-next {
+  left: -24px;
+}
+
+/* إخفاء أزرار التنقل على الأجهزة الصغيرة */
+@media (max-width: 768px) {
+  .carousel-btn { display: none; }
+  .product-carousel-wrapper { overflow-x: auto; }
+  .product-carousel { gap: 16px; }
+  .product-card-modern { width: 240px; }
+}
+
+/* ===== الشارات ===== */
+.product-badges .badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+}

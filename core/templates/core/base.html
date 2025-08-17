@@ -77,5 +77,75 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ===== تحريك الشريط تلقائياً والتنقل اليدوي =====
+    document.addEventListener('DOMContentLoaded', function() {
+      const carousels = document.querySelectorAll('.product-carousel');
+      
+      carousels.forEach(function(carousel) {
+        const wrapper = carousel.parentElement;
+        const prevBtn = wrapper.querySelector('.carousel-btn-prev');
+        const nextBtn = wrapper.querySelector('.carousel-btn-next');
+        
+        let currentIndex = 0;
+        const cardWidth = 304; // عرض البطاقة + المسافة
+        const visibleCards = Math.floor(wrapper.offsetWidth / cardWidth) || 1;
+        const totalCards = carousel.children.length;
+        const maxIndex = Math.max(0, totalCards - visibleCards);
+        
+        function moveCarousel(direction) {
+          if (direction === 'next') {
+            currentIndex = (currentIndex + 1) % (totalCards + 1);
+            if (currentIndex > maxIndex) currentIndex = 0;
+          } else {
+            currentIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
+          }
+          
+          const translateX = -currentIndex * cardWidth;
+          carousel.style.transform = `translateX(${translateX}px)`;
+        }
+        
+        // التحريك التلقائي كل 6 ثوانٍ
+        let autoScroll = setInterval(() => moveCarousel('next'), 6000);
+        
+        // إيقاف التحريك التلقائي عند hover
+        carousel.addEventListener('mouseenter', () => clearInterval(autoScroll));
+        carousel.addEventListener('mouseleave', () => {
+          autoScroll = setInterval(() => moveCarousel('next'), 6000);
+        });
+        
+        // أزرار التنقل اليدوي
+        if (prevBtn) prevBtn.addEventListener('click', () => moveCarousel('prev'));
+        if (nextBtn) nextBtn.addEventListener('click', () => moveCarousel('next'));
+      });
+      
+      // ===== تبديل المفضلة =====
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.favorite-btn')) {
+          const btn = e.target.closest('.favorite-btn');
+          const productId = btn.dataset.productId;
+          
+          // إرسال طلب AJAX لتبديل المفضلة
+          fetch('/products/favorites/toggle/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({product_id: productId})
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              btn.classList.toggle('active', data.is_favorite);
+              const icon = btn.querySelector('i');
+              icon.className = data.is_favorite ? 'bi bi-heart-fill' : 'bi bi-heart';
+            }
+          })
+          .catch(error => console.error('Error:', error));
+        }
+      });
+    });
+  </script>
 </body>
 </html>
