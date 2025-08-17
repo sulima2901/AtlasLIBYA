@@ -6,13 +6,112 @@ from django.views.decorators.http import require_POST
 from .models import Product, Category, Favorite
 import json
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
+from django.db.models import Q, Min, Max
+from .models import Product, Category, Favorite
+import json
+
 # قائمة المنتجات العامة
 def products_list(request):
-    products = Product.objects.filter(is_active=True).order_by('-created_at')
+    products = Product.objects.filter(is_active=True).select_related('category')
     categories = Category.objects.all()
+    
+    # البحث
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query) |
+            Q(brand__icontains=search_query)
+        )
+    
+    # فلترة حسب التصنيف
+    category_filter = request.GET.get('category')
+    if category_filter:
+        products = products.filter(category__slug=category_filter)
+    
+    # فلترة حسب العلامة التجارية
+    brand_filter = request.GET.get('brand')
+    if brand_filter:
+        products = products.filter(brand__iexact=brand_filter)
+    
+    # فلترة حسب السعر
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            min_price = float(min_price)
+            products = products.filter(price__gte=min_price)
+        except ValueError:
+            pass
+    if max_price:
+        try:
+            max_price = float(max_price)
+            products = products.filter(price__lte=max_price)
+        except ValueError:
+            pass
+    
+    # فلاتر خاصة
+    if request.GET.get('new'):
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        products = products.filter(created_at__gte=thirty_days_ago)
+    
+    if request.GET.get('offers'):
+        products = products.filter(Q(is_on_offer=True) | Q(discount_percent__gt=0))
+    
+    # الترتيب
+    sort_by = request.GET.get('sort', '-created_at')
+    if sort_by in ['-created_at', 'name', 'price', '-price']:
+        products = products.order_by(sort_by)
+    else:
+        products = products.order_by('-created_at')
+    
+    # الصفحات
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # قائمة العلامات التجارية المتاحة للفلترة
+    brands = Product.objects.filter(is_active=True, brand__isnull=False).exclude(brand='').values_list('brand', flat=True).distinct().order_by('brand')
+    
+    # نطاق الأسعار
+    price_range = Product.objects.filter(is_active=True).aggregate(
+        min_price=Min('price'),
+        max_price=Max('price')
+    )
+    
+    # الفلاتر المفعلة (لعرض الشيبس)
+    active_filters = {}
+    if search_query:
+        active_filters['search'] = search_query
+    if category_filter:
+        try:
+            cat_obj = Category.objects.get(slug=category_filter)
+            active_filters['category'] = {'slug': category_filter, 'name': cat_obj.name}
+        except Category.DoesNotExist:
+            pass
+    if brand_filter:
+        active_filters['brand'] = brand_filter
+    if min_price:
+        active_filters['min_price'] = min_price
+    if max_price:
+        active_filters['max_price'] = max_price
+    
     return render(request, 'products/public_list.html', {
-        'products': products,
+        'products': page_obj,
         'categories': categories,
+        'brands': brands,
+        'price_range': price_range,
+        'active_filters': active_filters,
+        'search_query': search_query,
+        'sort_by': sort_by,
     })
 
 # تفاصيل المنتج العامة
