@@ -254,5 +254,4 @@ def buy_now(request, pk):
     }
     
     # التوجه لصفحة الدفع مع معرف الشراء الفوري
-    messages.success(request, f"تم اختيار {product.name} للشراء الفوري. سيتم إنشاء صفحة الدفع في المرحلة التالية.")
-    return redirect('products:view_cart')  # مؤقتاً حتى إنشاء صفحة الدفع
+    return redirect('orders:checkout')

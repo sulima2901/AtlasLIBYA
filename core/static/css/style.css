@@ -536,3 +536,141 @@ h3, .h3{ font-size:clamp(1.15rem, 1.2vw + .8rem, 1.35rem); }
     padding: 1rem;
   }
 }
+
+/* ===== صفحة السلة ===== */
+.cart-items {
+  border-radius: var(--radius);
+}
+
+.cart-item {
+  transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+  background-color: #f8f9fa;
+}
+
+.cart-product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid #dee2e6;
+}
+
+.product-name {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.product-name a:hover {
+  color: #0d6efd !important;
+}
+
+.quantity-wrapper {
+  max-width: 120px;
+}
+
+.qty-input {
+  font-size: 0.9rem;
+}
+
+.price-column .unit-price {
+  font-size: 0.85rem;
+}
+
+.price-column .total-price {
+  font-size: 1.1rem;
+}
+
+.order-summary {
+  border-radius: var(--radius);
+}
+
+.empty-cart {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-cart-icon {
+  opacity: 0.6;
+}
+
+/* ===== صفحة الدفع ===== */
+.checkout-section {
+  border-radius: var(--radius);
+}
+
+.section-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.payment-method .form-check {
+  border: 2px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.payment-method .form-check:hover {
+  border-color: #0d6efd;
+  background-color: #f8f9fa;
+}
+
+.payment-method .form-check-input:checked + .form-check-label {
+  color: #0d6efd;
+}
+
+.order-item {
+  transition: background-color 0.2s ease;
+}
+
+.order-item:hover {
+  background-color: #f8f9fa;
+}
+
+.calculations {
+  font-size: 0.95rem;
+}
+
+.guarantees li {
+  padding: 0.25rem 0;
+}
+
+/* التجاوب للسلة والدفع */
+@media (max-width: 992px) {
+  .cart-product-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .order-summary {
+    position: static !important;
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cart-item .row > div {
+    margin-bottom: 1rem;
+  }
+  
+  .cart-item .col-2:first-child {
+    text-align: center;
+  }
+  
+  .price-column,
+  .actions {
+    text-align: center !important;
+  }
+  
+  .checkout-section {
+    margin-bottom: 1rem;
+  }
+}

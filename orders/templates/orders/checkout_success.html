@@ -1,0 +1,210 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}تم إنشاء الطلب بنجاح | AtlasLY{% endblock %}
+{% block content %}
+
+<section class="section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <!-- رسالة النجاح -->
+        <div class="success-message text-center mb-5">
+          <div class="success-icon mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+          </div>
+          <h1 class="h2 text-success fw-bold mb-3">تم إنشاء الطلب بنجاح!</h1>
+          <p class="lead text-muted mb-4">
+            شكراً لك على ثقتك في AtlasLY. تم استلام طلبك وسيتم التواصل معك قريباً.
+          </p>
+        </div>
+
+        <!-- تفاصيل الطلب -->
+        <div class="order-details bg-white border rounded shadow-sm mb-4">
+          <div class="card-header bg-primary text-white p-3">
+            <h5 class="mb-0">
+              <i class="bi bi-receipt me-2"></i>تفاصيل الطلب #{{ order.id }}
+            </h5>
+          </div>
+
+          <div class="card-body p-4">
+            <!-- معلومات أساسية -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <strong>رقم الطلب:</strong> {{ order.id }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <strong>تاريخ الطلب:</strong> {{ order.created_at|date:"d/m/Y H:i" }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <strong>حالة الطلب:</strong> 
+                  <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <strong>طريقة الدفع:</strong> {{ order.get_payment_method_display }}
+                </div>
+              </div>
+            </div>
+
+            <!-- معلومات العميل -->
+            <div class="customer-info mb-4 p-3 bg-light rounded">
+              <h6 class="fw-bold mb-3">
+                <i class="bi bi-person-fill me-2"></i>معلومات التسليم
+              </h6>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <strong>الاسم:</strong> {{ order.customer_name }}
+                </div>
+                <div class="col-md-6 mb-2">
+                  <strong>الهاتف:</strong> {{ order.customer_phone }}
+                </div>
+                {% if order.customer_email %}
+                <div class="col-md-6 mb-2">
+                  <strong>البريد:</strong> {{ order.customer_email }}
+                </div>
+                {% endif %}
+                <div class="col-md-6 mb-2">
+                  <strong>المدينة:</strong> {{ order.customer_city }}
+                </div>
+                <div class="col-12 mb-2">
+                  <strong>العنوان:</strong> {{ order.customer_address }}
+                </div>
+                {% if order.order_notes %}
+                <div class="col-12">
+                  <strong>ملاحظات:</strong> {{ order.order_notes }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- عناصر الطلب -->
+            <div class="order-items">
+              <h6 class="fw-bold mb-3">
+                <i class="bi bi-bag-fill me-2"></i>عناصر الطلب
+              </h6>
+              
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead class="table-light">
+                    <tr>
+                      <th>المنتج</th>
+                      <th class="text-center">الكمية</th>
+                      <th>سعر الوحدة</th>
+                      <th>الإجمالي</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          {% if item.product.images.first %}
+                            <img src="{{ item.product.images.first.image.url }}" 
+                                 class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;"
+                                 alt="{{ item.product.name }}">
+                          {% endif %}
+                          <span>{{ item.product.name }}</span>
+                        </div>
+                      </td>
+                      <td class="text-center">{{ item.quantity }}</td>
+                      <td>{{ item.unit_price|floatformat:2 }} د.ل</td>
+                      <td class="fw-bold">{{ item.total_price|floatformat:2 }} د.ل</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot class="table-light">
+                    <tr>
+                      <th colspan="3" class="text-end">المجموع الكلي:</th>
+                      <th class="text-primary">{{ order.total|floatformat:2 }} د.ل</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- الخطوات التالية -->
+        <div class="next-steps bg-light border rounded p-4 mb-4">
+          <h6 class="fw-bold mb-3">
+            <i class="bi bi-list-check me-2"></i>الخطوات التالية
+          </h6>
+          <ol class="mb-0">
+            <li class="mb-2">سيتم التواصل معك هاتفياً في أقرب وقت لتأكيد الطلب</li>
+            <li class="mb-2">سيتم تحضير طلبك وتجهيزه للتوصيل</li>
+            <li class="mb-2">سيتم توصيل الطلب إلى العنوان المحدد</li>
+            <li>يمكنك الدفع نقداً عند الاستلام</li>
+          </ol>
+        </div>
+
+        <!-- أزرار العمل -->
+        <div class="action-buttons text-center">
+          <a href="{% url 'products:products_list' %}" class="btn btn-primary btn-lg me-3">
+            <i class="bi bi-bag-plus me-2"></i>متابعة التسوق
+          </a>
+          <a href="/" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house-door me-2"></i>الصفحة الرئيسية
+          </a>
+        </div>
+
+        <!-- معلومات الاتصال -->
+        <div class="contact-info text-center mt-5 pt-4 border-top">
+          <h6 class="fw-bold mb-3">هل لديك استفسار؟</h6>
+          <p class="text-muted mb-2">
+            يمكنك التواصل معنا في أي وقت للاستفسار عن طلبك
+          </p>
+          <div class="contact-methods">
+            <span class="me-4">
+              <i class="bi bi-telephone-fill text-primary me-2"></i>
+              <strong>الهاتف:</strong> 0123456789
+            </span>
+            <span>
+              <i class="bi bi-envelope-fill text-primary me-2"></i>
+              <strong>البريد:</strong> info@atlasly.com
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.success-icon {
+  animation: bounceIn 0.8s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.info-item {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+</style>
+
+{% endblock %}

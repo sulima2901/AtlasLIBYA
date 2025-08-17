@@ -12,6 +12,7 @@ urlpatterns = [
     path('', core_views.home, name='home'),
     path('products/', include(('products.urls', 'products'), namespace='products')),
     path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
+    path('orders/', include(('orders.urls', 'orders'), namespace='orders')),
 
     # لوحة التحكم - كلها تحت /dashboard/ فقط
     path('dashboard/', include(('dashboard.urls', 'dashboard'), namespace='dashboard')),

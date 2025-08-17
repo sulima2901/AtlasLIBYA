@@ -1,64 +1,236 @@
 {% extends "core/base.html" %}
-{% block title %}سلة المشتريات{% endblock %}
+{% load static %}
+{% block title %}سلة المشتريات | AtlasLY{% endblock %}
 {% block content %}
 
 <section class="section">
   <div class="container">
-    <h2 class="section-title">سلة المشتريات</h2>
+    <div class="row">
+      <div class="col-12">
+        <h1 class="h3 fw-bold mb-4">سلة المشتريات</h1>
+      </div>
+    </div>
 
     {% if items %}
-      <div class="table-responsive">
-        <table class="table align-middle bg-white shadow-sm">
-          <thead class="table-light">
-            <tr>
-              <th>المنتج</th>
-              <th class="text-center" style="width:140px;">الكمية</th>
-              <th>السعر للوحدة</th>
-              <th>الإجمالي</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in items %}
-              <tr>
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    {% if row.product.images.first %}
-                      <img src="{{ row.product.images.first.image.url }}" style="width:56px;height:56px;object-fit:cover;" class="rounded border" alt="">
-                    {% endif %}
-                    <a href="{% url 'products:product_detail' row.product.slug %}" class="text-decoration-none">{{ row.product.name }}</a>
+      <div class="row">
+        <!-- محتوى السلة الرئيسي -->
+        <div class="col-lg-8">
+          <div class="cart-items bg-white border rounded shadow-sm">
+            <div class="cart-header p-3 border-bottom bg-light">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">عناصر السلة</h5>
+                <span class="text-muted small">{{ items|length }} عنصر</span>
+              </div>
+            </div>
+
+            <div class="cart-content">
+              {% for item in items %}
+                <div class="cart-item p-3 border-bottom">
+                  <div class="row align-items-center">
+                    <!-- صورة المنتج -->
+                    <div class="col-2">
+                      <div class="product-image-wrapper">
+                        {% if item.product.images.first %}
+                          <img src="{{ item.product.images.first.image.url }}" 
+                               class="cart-product-image" 
+                               alt="{{ item.product.name }}">
+                        {% else %}
+                          <img src="{% static 'core/no_image.png' %}" 
+                               class="cart-product-image" 
+                               alt="لا توجد صورة">
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <!-- معلومات المنتج -->
+                    <div class="col-4">
+                      <div class="product-details">
+                        <h6 class="product-name mb-2">
+                          <a href="{% url 'products:product_detail' item.product.slug %}" 
+                             class="text-decoration-none text-dark">
+                            {{ item.product.name }}
+                          </a>
+                        </h6>
+                        
+                        <div class="product-meta small text-muted">
+                          {% if item.product.brand %}
+                            <span class="me-3">العلامة: {{ item.product.brand }}</span>
+                          {% endif %}
+                          <span>التصنيف: {{ item.product.category.name }}</span>
+                        </div>
+
+                        <!-- حالة التوفر -->
+                        <div class="availability-status mt-2">
+                          {% if item.product.stock > 0 %}
+                            <span class="text-success small">
+                              <i class="bi bi-check-circle-fill me-1"></i>متوفر
+                            </span>
+                          {% else %}
+                            <span class="text-danger small">
+                              <i class="bi bi-x-circle-fill me-1"></i>غير متوفر
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- محدد الكمية -->
+                    <div class="col-2">
+                      <form method="post" action="{% url 'products:update_cart' item.product.id %}">
+                        {% csrf_token %}
+                        <div class="quantity-wrapper">
+                          <label class="form-label small text-muted mb-1">الكمية:</label>
+                          <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" 
+                                    data-action="decrease">-</button>
+                            <input type="number" name="qty" value="{{ item.qty }}" 
+                                   min="0" max="{{ item.product.stock }}" 
+                                   class="form-control text-center mx-1 qty-input" 
+                                   style="width: 60px;" 
+                                   data-product-id="{{ item.product.id }}">
+                            <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" 
+                                    data-action="increase" 
+                                    data-max="{{ item.product.stock }}">+</button>
+                          </div>
+                          <button type="submit" class="btn btn-link btn-sm p-0 mt-1 text-decoration-none">
+                            تحديث
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                    <!-- السعر -->
+                    <div class="col-2 text-end">
+                      <div class="price-column">
+                        <div class="unit-price small text-muted">
+                          {{ item.unit_price|floatformat:2 }} د.ل/قطعة
+                        </div>
+                        <div class="total-price fw-bold text-primary">
+                          {{ item.line_total|floatformat:2 }} د.ل
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- إزالة -->
+                    <div class="col-2 text-end">
+                      <div class="actions">
+                        <a href="{% url 'products:remove_from_cart' item.product.id %}" 
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('هل تريد إزالة هذا المنتج من السلة؟')">
+                          <i class="bi bi-trash me-1"></i>إزالة
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </td>
-                <td class="text-center">
-                  <form method="post" action="{% url 'products:update_cart' row.product.id %}" class="d-inline-flex align-items-center gap-1 justify-content-center">
-                    {% csrf_token %}
-                    <input type="number" name="qty" value="{{ row.qty }}" min="0" class="form-control form-control-sm" style="width:70px;">
-                    <button class="btn btn-sm btn-outline-primary">تحديث</button>
-                  </form>
-                </td>
-                <td>{{ row.unit_price|floatformat:2 }} د.ل</td>
-                <td>{{ row.line_total|floatformat:2 }} د.ل</td>
-                <td class="text-end">
-                  <a href="{% url 'products:remove_from_cart' row.product.id %}" class="btn btn-sm btn-outline-danger">إزالة</a>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-          <tfoot>
-            <tr>
-              <th colspan="3" class="text-end">الإجمالي</th>
-              <th colspan="2">{{ subtotal|floatformat:2 }} د.ل</th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <div class="d-flex justify-content-end mt-3">
-        <button class="btn btn-success" disabled>متابعة الدفع (لاحقًا)</button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- ملخص الطلب -->
+        <div class="col-lg-4">
+          <div class="order-summary bg-white border rounded shadow-sm sticky-top" style="top: 20px;">
+            <div class="summary-header p-3 border-bottom bg-light">
+              <h5 class="mb-0">ملخص الطلب</h5>
+            </div>
+
+            <div class="summary-content p-3">
+              <!-- الإجمالي الفرعي -->
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span>الإجمالي الفرعي ({{ items|length }} عنصر):</span>
+                <span class="fw-bold">{{ subtotal|floatformat:2 }} د.ل</span>
+              </div>
+
+              <!-- الشحن -->
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span>تكلفة الشحن:</span>
+                <span class="text-success">مجاني</span>
+              </div>
+
+              <hr>
+
+              <!-- الإجمالي النهائي -->
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="h6 mb-0">الإجمالي:</span>
+                <span class="h5 mb-0 text-primary fw-bold">{{ subtotal|floatformat:2 }} د.ل</span>
+              </div>
+
+              <!-- أزرار العمل -->
+              <div class="action-buttons">
+                <a href="{% url 'orders:checkout' %}" class="btn btn-primary w-100 mb-2 fw-semibold">
+                  <i class="bi bi-credit-card me-2"></i>متابعة الدفع
+                </a>
+                <a href="{% url 'products:products_list' %}" class="btn btn-outline-secondary w-100">
+                  <i class="bi bi-arrow-right me-2"></i>متابعة التسوق
+                </a>
+              </div>
+
+              <!-- معلومات إضافية -->
+              <div class="additional-info mt-4 pt-3 border-top">
+                <ul class="list-unstyled small text-muted mb-0">
+                  <li class="mb-1"><i class="bi bi-truck me-2 text-success"></i>شحن مجاني داخل المدينة</li>
+                  <li class="mb-1"><i class="bi bi-shield-check me-2 text-primary"></i>ضمان الجودة</li>
+                  <li class="mb-1"><i class="bi bi-arrow-counterclockwise me-2 text-warning"></i>إرجاع مجاني خلال 7 أيام</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     {% else %}
-      <div class="alert alert-info text-center">سلتك فارغة.</div>
+      <!-- سلة فارغة -->
+      <div class="empty-cart text-center py-5">
+        <div class="empty-cart-icon mb-4">
+          <i class="bi bi-cart-x display-1 text-muted"></i>
+        </div>
+        <h3 class="mb-3">سلة المشتريات فارغة</h3>
+        <p class="text-muted mb-4">لم تقم بإضافة أي منتجات لسلة المشتريات بعد</p>
+        <div class="empty-cart-actions">
+          <a href="{% url 'products:products_list' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-bag-plus me-2"></i>ابدأ التسوق الآن
+          </a>
+        </div>
+      </div>
     {% endif %}
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // أزرار الكمية
+  const qtyBtns = document.querySelectorAll('.qty-btn');
+  
+  qtyBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const action = this.dataset.action;
+      const wrapper = this.closest('.quantity-wrapper');
+      const qtyInput = wrapper.querySelector('.qty-input');
+      let currentValue = parseInt(qtyInput.value) || 1;
+      const maxValue = parseInt(this.dataset.max) || parseInt(qtyInput.max) || 999;
+
+      if (action === 'increase' && currentValue < maxValue) {
+        currentValue++;
+      } else if (action === 'decrease' && currentValue > 1) {
+        currentValue--;
+      }
+
+      qtyInput.value = currentValue;
+    });
+  });
+
+  // تحديث تلقائي عند تغيير الكمية
+  const qtyInputs = document.querySelectorAll('.qty-input');
+  qtyInputs.forEach(input => {
+    let timeoutId;
+    input.addEventListener('input', function() {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        this.form.submit();
+      }, 1500); // تحديث تلقائي بعد 1.5 ثانية من توقف الكتابة
+    });
+  });
+});
+</script>
 
 {% endblock %}
