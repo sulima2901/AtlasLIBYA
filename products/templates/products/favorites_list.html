@@ -1,0 +1,140 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}مفضلتي | AtlasLY{% endblock %}
+{% block content %}
+
+<section class="section">
+  <div class="container">
+    <!-- العنوان -->
+    <div class="favorites-header mb-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="h3 fw-bold mb-2">
+            <i class="bi bi-heart-fill text-danger me-2"></i>مفضلتي
+          </h1>
+          <p class="text-muted mb-0">
+            {% if favorites.paginator.count %}
+              {{ favorites.paginator.count }} منتج في مفضلتك
+            {% else %}
+              لا توجد منتجات مفضلة
+            {% endif %}
+          </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <a href="{% url 'products:products_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-plus-circle me-2"></i>إضافة المزيد
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% if favorites %}
+      <!-- شبكة المنتجات المفضلة -->
+      <div class="favorites-grid row g-4">
+        {% for favorite in favorites %}
+          <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <div class="favorite-item position-relative">
+              {% include 'core/partials/product_card.html' with product=favorite.product show_heart=True %}
+              
+              <!-- تاريخ الإضافة -->
+              <div class="favorite-date position-absolute bg-white rounded-pill px-2 py-1 small text-muted border" 
+                   style="top: 12px; right: 12px; z-index: 5;">
+                <i class="bi bi-calendar3 me-1"></i>{{ favorite.created_at|date:"d/m" }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- الصفحات -->
+      {% if favorites.has_other_pages %}
+      <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+          {% if favorites.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ favorites.previous_page_number }}">
+                <i class="bi bi-chevron-right me-1"></i>السابق
+              </a>
+            </li>
+          {% endif %}
+          
+          {% for num in favorites.paginator.page_range %}
+            {% if favorites.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > favorites.number|add:'-3' and num < favorites.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if favorites.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ favorites.next_page_number }}">
+                التالي<i class="bi bi-chevron-left ms-1"></i>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <!-- حالة الفراغ -->
+      <div class="empty-favorites text-center py-5">
+        <div class="empty-icon mb-4">
+          <i class="bi bi-heart display-1 text-muted"></i>
+        </div>
+        <h3 class="mb-3">لا توجد منتجات مفضلة</h3>
+        <p class="text-muted mb-4 lead">
+          ابدأ بإضافة المنتجات التي تعجبك إلى المفضلة<br>
+          لتجدها بسهولة فيما بعد
+        </p>
+        <div class="empty-actions">
+          <a href="{% url 'products:products_list' %}" class="btn btn-primary btn-lg me-3">
+            <i class="bi bi-bag-plus me-2"></i>تصفح المنتجات
+          </a>
+          <a href="/" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house-door me-2"></i>الصفحة الرئيسية
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+.favorite-item {
+  transition: transform 0.2s ease;
+}
+
+.favorite-item:hover {
+  transform: translateY(-4px);
+}
+
+.favorite-date {
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.empty-favorites {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon {
+  opacity: 0.6;
+}
+
+/* تأثير الانتباه للمنتجات الجديدة في المفضلة */
+.favorite-item:hover .favorite-date {
+  background-color: #0d6efd !important;
+  color: white !important;
+}
+</style>
+
+{% endblock %}

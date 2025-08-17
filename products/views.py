@@ -255,3 +255,17 @@ def buy_now(request, pk):
     
     # التوجه لصفحة الدفع مع معرف الشراء الفوري
     return redirect('orders:checkout')
+
+# ============ صفحة المفضلة ============
+@login_required
+def favorites_list(request):
+    """صفحة المفضلة"""
+    favorites = Favorite.objects.filter(user=request.user).select_related('product')
+    
+    paginator = Paginator(favorites, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'products/favorites_list.html', {
+        'favorites': page_obj
+    })
