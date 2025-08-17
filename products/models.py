@@ -61,6 +61,14 @@ class Product(models.Model):
             return int((1 - self.offer_price / self.price) * 100)
         return self.discount_percent
 
+    def get_savings_amount(self):
+        """حساب مبلغ التوفير"""
+        if self.is_on_offer and self.offer_price:
+            return self.price - self.offer_price
+        elif self.discount_percent:
+            return self.price * (self.discount_percent / 100)
+        return 0
+
     def __str__(self):
         return self.name
 

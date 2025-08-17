@@ -223,3 +223,36 @@ def toggle_favorite(request):
             'success': False,
             'message': 'حدث خطأ في العملية'
         }, status=400)
+
+# ============ الشراء الفوري ============
+def buy_now(request, pk):
+    """الشراء الفوري - ينقل مباشرة لصفحة الدفع"""
+    if request.method != "POST":
+        return redirect('products:product_detail', slug=get_object_or_404(Product, pk=pk).slug)
+    
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    
+    try:
+        qty = max(1, int(request.POST.get('qty', '1')))
+    except ValueError:
+        qty = 1
+    
+    if product.stock <= 0:
+        messages.error(request, "المنتج غير متوفر حاليًا.")
+        return redirect('products:product_detail', slug=product.slug)
+    
+    if qty > product.stock:
+        messages.error(request, f"الكمية المطلوبة غير متوفرة. متوفر فقط {product.stock} قطعة.")
+        return redirect('products:product_detail', slug=product.slug)
+    
+    # حفظ معلومات الشراء الفوري في الجلسة
+    request.session['buy_now_item'] = {
+        'product_id': product.id,
+        'quantity': qty,
+        'unit_price': float(product.price_after_discount()),
+        'total_price': float(product.price_after_discount() * qty)
+    }
+    
+    # التوجه لصفحة الدفع مع معرف الشراء الفوري
+    messages.success(request, f"تم اختيار {product.name} للشراء الفوري. سيتم إنشاء صفحة الدفع في المرحلة التالية.")
+    return redirect('products:view_cart')  # مؤقتاً حتى إنشاء صفحة الدفع

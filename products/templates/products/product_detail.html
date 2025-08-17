@@ -5,87 +5,208 @@
 
 <section class="section">
   <div class="container">
-    <nav aria-label="breadcrumb" class="mb-3">
+    <!-- مسار التنقل -->
+    <nav aria-label="breadcrumb" class="mb-4">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">الرئيسية</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'products:products_list' %}">المنتجات</a></li>
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">الرئيسية</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'products:products_list' %}" class="text-decoration-none">المنتجات</a></li>
+        {% if product.category %}
+          <li class="breadcrumb-item"><a href="{% url 'products:products_list' %}?category={{ product.category.slug }}" class="text-decoration-none">{{ product.category.name }}</a></li>
+        {% endif %}
         <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
       </ol>
     </nav>
 
     <div class="row g-4">
-      <div class="col-12 col-lg-6">
-        {% if images and images|length > 1 %}
-          <div id="productCarousel" class="carousel slide pd-gallery" data-bs-ride="true">
-            <div class="carousel-inner">
+      <!-- العمود الأيسر: معرض الصور -->
+      <div class="col-12 col-lg-5">
+        <div class="product-gallery position-relative">
+          <!-- أيقونة القلب للمفضلة -->
+          <button class="favorite-btn position-absolute{% if request.user.is_authenticated and product.id in user_favorites %} active{% endif %}" 
+                  data-product-id="{{ product.id }}"
+                  style="top: 16px; left: 16px; z-index: 10;"
+                  {% if not request.user.is_authenticated %}onclick="alert('يرجى تسجيل الدخول لإضافة المنتجات للمفضلة')"{% endif %}>
+            <i class="bi bi-heart{% if request.user.is_authenticated and product.id in user_favorites %}-fill{% endif %}"></i>
+          </button>
+
+          {% if images and images|length > 1 %}
+            <!-- شريط الصور المصغرة -->
+            <div class="thumbnails-sidebar">
               {% for img in images %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ img.alt_text|default:product.name }}" style="max-height:520px;object-fit:contain;background:#fff;">
+                <div class="thumbnail-item{% if forloop.first %} active{% endif %}" 
+                     data-bs-target="#productCarousel" data-bs-slide-to="{{ forloop.counter0 }}">
+                  <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:product.name }}" class="pd-thumb">
                 </div>
               {% endfor %}
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">السابق</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">التالي</span>
-            </button>
-          </div>
-        {% else %}
-          <div class="pd-gallery p-3 text-center">
-            {% if images and images.first %}
-              <img src="{{ images.first.image.url }}" class="img-fluid" alt="{{ images.first.alt_text|default:product.name }}" style="max-height:520px;object-fit:contain;">
-            {% else %}
-              <img src="{% static 'core/no_image.png' %}" class="img-fluid" alt="لا توجد صورة" style="max-height:520px;object-fit:contain;">
-            {% endif %}
-          </div>
-        {% endif %}
-      </div>
 
-      <div class="col-12 col-lg-6">
-        <h1 class="h3 fw-bold mb-3">{{ product.name }}</h1>
-
-        <div class="pd-price d-flex align-items-center gap-3 mb-2">
-          {% if product.discount_percent %}
-            <div>
-              <div class="new text-danger">{{ product.price_after_discount|floatformat:2 }} د.ل</div>
-              <small class="old">{{ product.price|floatformat:2 }} د.ل</small>
-              <span class="badge bg-warning text-dark ms-2">خصم {{ product.discount_percent }}%</span>
+            <!-- الصورة الرئيسية -->
+            <div id="productCarousel" class="carousel slide main-image-container">
+              <div class="carousel-inner">
+                {% for img in images %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ img.image.url }}" class="main-product-image" alt="{{ img.alt_text|default:product.name }}">
+                  </div>
+                {% endfor %}
+              </div>
             </div>
           {% else %}
-            <div class="new">{{ product.price|floatformat:2 }} د.ل</div>
+            <div class="single-image-container">
+              {% if images and images.first %}
+                <img src="{{ images.first.image.url }}" class="main-product-image" alt="{{ images.first.alt_text|default:product.name }}">
+              {% else %}
+                <img src="{% static 'core/no_image.png' %}" class="main-product-image" alt="لا توجد صورة">
+              {% endif %}
+            </div>
           {% endif %}
         </div>
+      </div>
 
-        <div class="mb-2">
+      <!-- العمود الأوسط: معلومات المنتج -->
+      <div class="col-12 col-lg-4">
+        <div class="product-info">
+          <h1 class="product-title">{{ product.name }}</h1>
+          
+          <!-- التقييم (يمكن إضافته لاحقاً) -->
+          <div class="product-rating mb-3">
+            <div class="d-flex align-items-center gap-1">
+              {% for i in "12345" %}
+                <i class="bi bi-star text-warning"></i>
+              {% endfor %}
+              <span class="text-muted ms-2">(0 تقييم)</span>
+            </div>
+          </div>
+
+          <!-- السعر -->
+          <div class="product-pricing mb-4">
+            {% if product.is_on_offer and product.offer_price %}
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="current-price text-danger">{{ product.offer_price|floatformat:2 }} د.ل</span>
+                <span class="original-price">{{ product.price|floatformat:2 }} د.ل</span>
+                <span class="discount-badge">-{{ product.get_discount_percent }}%</span>
+              </div>
+              <div class="savings-info text-success small mt-1">
+                وفر {{ product.get_savings_amount|floatformat:2 }} د.ل
+              </div>
+            {% elif product.discount_percent %}
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="current-price text-danger">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
+                <span class="original-price">{{ product.price|floatformat:2 }} د.ل</span>
+                <span class="discount-badge">-{{ product.discount_percent }}%</span>
+              </div>
+            {% else %}
+              <span class="current-price">{{ product.price|floatformat:2 }} د.ل</span>
+            {% endif %}
+          </div>
+
+          <!-- الحالة والتوفر -->
+          <div class="product-availability mb-3">
+            {% if product.stock > 0 %}
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span class="text-success fw-semibold">متوفر في المخزون</span>
+              </div>
+              {% if product.stock <= 5 %}
+                <div class="text-warning small mt-1">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                  متبقي {{ product.stock }} قطع فقط!
+                </div>
+              {% endif %}
+            {% else %}
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-x-circle-fill text-danger"></i>
+                <span class="text-danger fw-semibold">غير متوفر حالياً</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- معلومات إضافية -->
+          <div class="product-meta mb-4">
+            <div class="meta-item">
+              <span class="meta-label">التصنيف:</span>
+              <a href="{% url 'products:products_list' %}?category={{ product.category.slug }}" class="meta-value">{{ product.category.name }}</a>
+            </div>
+            {% if product.brand %}
+            <div class="meta-item">
+              <span class="meta-label">العلامة التجارية:</span>
+              <a href="{% url 'products:products_list' %}?brand={{ product.brand }}" class="meta-value">{{ product.brand }}</a>
+            </div>
+            {% endif %}
+            {% if product.is_new %}
+            <div class="meta-item">
+              <span class="badge bg-success">منتج جديد</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- الوصف -->
+          {% if product.description %}
+          <div class="product-description">
+            <h3 class="section-subtitle">الوصف</h3>
+            <div class="description-content">{{ product.description|linebreaksbr }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- العمود الأيمن: صندوق الشراء -->
+      <div class="col-12 col-lg-3">
+        <div class="purchase-box">
+          <div class="price-box mb-3">
+            {% if product.is_on_offer and product.offer_price %}
+              <div class="offer-price">{{ product.offer_price|floatformat:2 }} د.ل</div>
+              {% if product.price != product.offer_price %}
+                <div class="original-price-small">{{ product.price|floatformat:2 }} د.ل</div>
+              {% endif %}
+            {% elif product.discount_percent %}
+              <div class="offer-price">{{ product.price_after_discount|floatformat:2 }} د.ل</div>
+              <div class="original-price-small">{{ product.price|floatformat:2 }} د.ل</div>
+            {% else %}
+              <div class="regular-price">{{ product.price|floatformat:2 }} د.ل</div>
+            {% endif %}
+          </div>
+
+          <!-- خيارات الشراء -->
           {% if product.stock > 0 %}
-            <span class="badge bg-success">متوفر</span>
+            <div class="purchase-options">
+              <!-- إضافة للسلة -->
+              <form action="{% url 'products:add_to_cart' product.id %}" method="post" class="add-to-cart-form mb-3">
+                {% csrf_token %}
+                <div class="quantity-selector mb-3">
+                  <label class="form-label small">الكمية:</label>
+                  <div class="d-flex align-items-center">
+                    <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" data-action="decrease">-</button>
+                    <input type="number" name="qty" value="1" min="1" max="{{ product.stock }}" class="form-control text-center mx-2 qty-input" style="width: 70px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm qty-btn" data-action="increase">+</button>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-warning w-100 mb-2 fw-semibold">
+                  <i class="bi bi-cart-plus me-2"></i>أضف إلى السلة
+                </button>
+              </form>
+
+              <!-- شراء فوري -->
+              <form action="{% url 'products:buy_now' product.id %}" method="post" class="buy-now-form">
+                {% csrf_token %}
+                <input type="hidden" name="qty" value="1" class="buy-now-qty">
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                  <i class="bi bi-lightning-fill me-2"></i>اشترِ الآن
+                </button>
+              </form>
+            </div>
           {% else %}
-            <span class="badge bg-secondary">غير متوفر</span>
-          {% endif %}
-        </div>
-
-        <div class="text-muted mb-3">التصنيف: <span class="fw-semibold">{{ product.category.name }}</span></div>
-
-        <div class="mb-4">
-          <h2 class="h6 text-secondary">الوصف</h2>
-          <p class="mb-0">{{ product.description|linebreaksbr }}</p>
-        </div>
-
-        <div class="d-flex gap-2 align-items-center">
-          {% if product.stock > 0 %}
-          <form action="{% url 'products:add_to_cart' product.id %}" method="post" class="d-flex gap-2 align-items-center">
-            {% csrf_token %}
-            <input type="number" name="qty" value="1" min="1" class="form-control" style="width:110px">
-            <button class="btn btn-primary btn-lg" type="submit">أضف إلى السلة</button>
-          </form>
-          {% else %}
-            <button class="btn btn-secondary btn-lg" disabled>غير متوفر</button>
+            <div class="out-of-stock-box text-center py-3">
+              <i class="bi bi-x-circle display-6 text-muted"></i>
+              <p class="mt-2 mb-0">المنتج غير متوفر حالياً</p>
+            </div>
           {% endif %}
 
-          <button class="btn btn-outline-secondary btn-lg" type="button" id="shareBtn">مشاركة</button>
+          <!-- المشاركة -->
+          <div class="social-actions mt-4 pt-3 border-top">
+            <button class="btn btn-outline-secondary w-100 btn-sm" type="button" id="shareBtn">
+              <i class="bi bi-share me-2"></i>مشاركة المنتج
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -93,9 +214,46 @@
 </section>
 
 <script>
-  (function(){
-    const shareBtn = document.getElementById('shareBtn');
-    if(!shareBtn) return;
+document.addEventListener('DOMContentLoaded', function() {
+  // أزرار الكمية
+  const qtyBtns = document.querySelectorAll('.qty-btn');
+  const qtyInput = document.querySelector('.qty-input');
+  const buyNowQtyInput = document.querySelector('.buy-now-qty');
+
+  qtyBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const action = this.dataset.action;
+      let currentValue = parseInt(qtyInput.value) || 1;
+      const maxValue = parseInt(qtyInput.max) || 999;
+
+      if (action === 'increase' && currentValue < maxValue) {
+        currentValue++;
+      } else if (action === 'decrease' && currentValue > 1) {
+        currentValue--;
+      }
+
+      qtyInput.value = currentValue;
+      if (buyNowQtyInput) buyNowQtyInput.value = currentValue;
+    });
+  });
+
+  // تحديث كمية الشراء الفوري عند تغيير الكمية
+  qtyInput.addEventListener('change', function() {
+    if (buyNowQtyInput) buyNowQtyInput.value = this.value;
+  });
+
+  // الصور المصغرة
+  const thumbnails = document.querySelectorAll('.thumbnail-item');
+  thumbnails.forEach((thumb, index) => {
+    thumb.addEventListener('click', function() {
+      thumbnails.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // المشاركة
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       const shareData = {
         title: '{{ product.name|escapejs }}',
@@ -103,13 +261,21 @@
         url: window.location.href
       };
       if (navigator.share) {
-        try { await navigator.share(shareData); } catch(e){}
+        try { 
+          await navigator.share(shareData); 
+        } catch(e) {}
       } else {
-        try { await navigator.clipboard.writeText(window.location.href); } catch(e){}
-        shareBtn.innerText = 'تم نسخ الرابط';
-        setTimeout(()=> shareBtn.innerText = 'مشاركة', 1500);
+        try { 
+          await navigator.clipboard.writeText(window.location.href); 
+          shareBtn.innerHTML = '<i class="bi bi-check me-2"></i>تم نسخ الرابط';
+          setTimeout(() => {
+            shareBtn.innerHTML = '<i class="bi bi-share me-2"></i>مشاركة المنتج';
+          }, 2000);
+        } catch(e) {}
       }
     });
-  })();
+  }
+});
 </script>
+
 {% endblock %}

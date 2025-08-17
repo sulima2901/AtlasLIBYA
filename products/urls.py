@@ -16,4 +16,7 @@ urlpatterns = [
     
     # المفضلة
     path('favorites/toggle/', views.toggle_favorite, name='toggle_favorite'),
+    
+    # شراء فوري
+    path('buy-now/<int:pk>/', views.buy_now, name='buy_now'),
 ]
