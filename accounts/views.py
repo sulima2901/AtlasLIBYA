@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from .forms import RegisterForm, LoginForm
+from orders.models import Order
+from products.models import Favorite
 
 def register_view(request):
     if request.method == 'POST':
@@ -39,3 +43,35 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'accounts/login.html', {'form': form, 'error': error})
+
+@login_required
+def account_view(request):
+    """صفحة الحساب الشخصي"""
+    user = request.user
+    
+    # جلب طلبات المستخدم
+    orders = Order.objects.filter(user=user).order_by('-created_at')
+    orders_paginator = Paginator(orders, 10)
+    orders_page_number = request.GET.get('orders_page')
+    orders_page_obj = orders_paginator.get_page(orders_page_number)
+    
+    # جلب المفضلات
+    favorites = Favorite.objects.filter(user=user).select_related('product').order_by('-created_at')
+    favorites_paginator = Paginator(favorites, 12)
+    favorites_page_number = request.GET.get('favorites_page')
+    favorites_page_obj = favorites_paginator.get_page(favorites_page_number)
+    
+    # إحصائيات
+    total_orders = orders.count()
+    pending_orders = orders.filter(status='pending').count()
+    total_favorites = favorites.count()
+    
+    context = {
+        'orders': orders_page_obj,
+        'favorites': favorites_page_obj,
+        'total_orders': total_orders,
+        'pending_orders': pending_orders,
+        'total_favorites': total_favorites,
+    }
+    
+    return render(request, 'accounts/account.html', context)

@@ -12,52 +12,59 @@
   </div>
 </section>
 
+<!-- قسم المنتجات الجديدة -->
+{% if new_products %}
 <section class="section">
   <div class="container">
-    <h2 class="section-title text-primary fw-bold text-center">منتجاتنا المميزة</h2>
-    <div class="row g-4 justify-content-center">
-      {% for product in products %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-          <div class="card product-card h-100 shadow-sm">
-            <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none">
-              {% if product.images.first %}
-                <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.name }}">
-              {% else %}
-                <img src="{% static 'core/no_image.png' %}" class="product-img" alt="لا توجد صورة">
-              {% endif %}
-            </a>
-            <div class="card-body">
-              <h5 class="card-title fw-semibold mb-2" style="min-height:48px;">{{ product.name }}</h5>
-              <div class="d-flex align-items-center gap-2">
-                {% if product.discount_percent %}
-                  <span class="text-danger product-price">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
-                  <small class="product-old">{{ product.price|floatformat:2 }} د.ل</small>
-                  <span class="badge bg-warning text-dark">-{{ product.discount_percent }}%</span>
-                {% else %}
-                  <span class="product-price">{{ product.price|floatformat:2 }} د.ل</span>
-                {% endif %}
-              </div>
-            </div>
-            <div class="card-footer bg-white border-0 d-flex align-items-center">
-              {% if product.stock > 0 %}
-                <span class="badge bg-success">متوفر</span>
-              {% else %}
-                <span class="badge bg-secondary">غير متوفر</span>
-              {% endif %}
-              <form action="{% url 'products:add_to_cart' product.id %}" method="post" class="ms-auto">
-                {% csrf_token %}
-                <input type="hidden" name="qty" value="1">
-                <button class="btn btn-outline-primary btn-sm">أضف إلى السلة</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      {% empty %}
-        <div class="col-12 text-center">
-          <p class="text-muted">لا توجد منتجات حالياً.</p>
-        </div>
-      {% endfor %}
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h2 class="section-title text-primary fw-bold m-0">
+        <i class="bi bi-star-fill me-2"></i>المنتجات الجديدة
+      </h2>
+      <a href="{% url 'products:products_list' %}?new=1" class="btn btn-outline-primary btn-sm">عرض الكل</a>
+    </div>
+    
+    <div class="product-carousel-wrapper position-relative">
+      <div class="product-carousel" id="newProductsCarousel">
+        {% for product in new_products %}
+          {% include 'core/partials/product_card.html' with product=product show_heart=True %}
+        {% endfor %}
+      </div>
+      <button class="carousel-btn carousel-btn-prev" data-carousel="newProductsCarousel">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button class="carousel-btn carousel-btn-next" data-carousel="newProductsCarousel">
+        <i class="bi bi-chevron-left"></i>
+      </button>
     </div>
   </div>
 </section>
+{% endif %}
+
+<!-- قسم العروض -->
+{% if offer_products %}
+<section class="section">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h2 class="section-title text-danger fw-bold m-0">
+        <i class="bi bi-percent me-2"></i>العروض الخاصة
+      </h2>
+      <a href="{% url 'products:products_list' %}?offers=1" class="btn btn-outline-danger btn-sm">عرض الكل</a>
+    </div>
+    
+    <div class="product-carousel-wrapper position-relative">
+      <div class="product-carousel" id="offerProductsCarousel">
+        {% for product in offer_products %}
+          {% include 'core/partials/product_card.html' with product=product show_heart=True %}
+        {% endfor %}
+      </div>
+      <button class="carousel-btn carousel-btn-prev" data-carousel="offerProductsCarousel">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button class="carousel-btn carousel-btn-next" data-carousel="offerProductsCarousel">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+</section>
+{% endif %}
 {% endblock %}
