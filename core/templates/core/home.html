@@ -3,61 +3,82 @@
 {% block title %}AtlasLY | الرئيسية{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <div class="container text-center">
-    <img src="{% static 'core/atlasly_logo.png' %}" alt="Logo" class="img-fluid mb-3" style="width: 82px;">
-    <h1 class="mb-2">مرحبًا بك في AtlasLY</h1>
-    <p class="lead mb-4">متجرك الأول في ليبيا لبيع اللابتوبات وأجهزة الكمبيوتر والإكسسوارات الأصلية.</p>
-    <a href="{% url 'products:products_list' %}" class="btn btn-light btn-lg shadow-sm px-4">تسوق الآن</a>
+<section class="hero-slim">
+  <div class="container">
+    <div class="d-flex flex-column align-items-center text-center py-3">
+      <img src="{% static 'core/atlasly_logo.png' %}" alt="AtlasLY" class="hero-logo mb-2">
+      <h1 class="hero-title mb-1">مرحباً بك في AtlasLY</h1>
+      <p class="text-secondary mb-3 small">أفضل مكان في ليبيا لشراء الحواسيب والإكسسوارات الأصلية.</p>
+
+      <form id="homeSearchForm" class="home-search d-flex gap-2 w-100" action="{% url 'products:products_list' %}" method="get">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="search" name="q" class="form-control" placeholder="ابحث عن منتج..." aria-label="ابحث">
+          <button class="btn btn-primary" type="submit">بحث</button>
+        </div>
+      </form>
+    </div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <h2 class="section-title text-primary fw-bold text-center">منتجاتنا المميزة</h2>
-    <div class="row g-4 justify-content-center">
-      {% for product in products %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-          <div class="card product-card h-100 shadow-sm">
-            <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none">
-              {% if product.images.first %}
-                <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.name }}">
-              {% else %}
-                <img src="{% static 'core/no_image.png' %}" class="product-img" alt="لا توجد صورة">
-              {% endif %}
-            </a>
-            <div class="card-body">
-              <h5 class="card-title fw-semibold mb-2" style="min-height:48px;">{{ product.name }}</h5>
-              <div class="d-flex align-items-center gap-2">
-                {% if product.discount_percent %}
-                  <span class="text-danger product-price">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
-                  <small class="product-old">{{ product.price|floatformat:2 }} د.ل</small>
-                  <span class="badge bg-warning text-dark">-{{ product.discount_percent }}%</span>
-                {% else %}
-                  <span class="product-price">{{ product.price|floatformat:2 }} د.ل</span>
-                {% endif %}
-              </div>
-            </div>
-            <div class="card-footer bg-white border-0 d-flex align-items-center">
-              {% if product.stock > 0 %}
-                <span class="badge bg-success">متوفر</span>
-              {% else %}
-                <span class="badge bg-secondary">غير متوفر</span>
-              {% endif %}
-              <form action="{% url 'products:add_to_cart' product.id %}" method="post" class="ms-auto">
-                {% csrf_token %}
-                <input type="hidden" name="qty" value="1">
-                <button class="btn btn-outline-primary btn-sm">أضف إلى السلة</button>
-              </form>
-            </div>
-          </div>
+    <div class="ad-banner shadow-sm">
+      <div class="row align-items-center">
+        <div class="col-12 col-md-8">
+          <h3 class="m-0">عروض هذا الأسبوع</h3>
+          <p class="m-0 text-muted small mt-1">خصومات على مختارات من الأجهزة والإكسسوارات.</p>
         </div>
-      {% empty %}
-        <div class="col-12 text-center">
-          <p class="text-muted">لا توجد منتجات حالياً.</p>
+        <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+          <a class="btn btn-primary" href="{% url 'products:products_list' %}?sort=newest">تسوق العروض</a>
         </div>
-      {% endfor %}
+      </div>
     </div>
   </div>
 </section>
+
+<section class="section">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="section-title text-primary fw-bold m-0">المنتجات الجديدة</h2>
+      <a href="{% url 'products:products_list' %}?sort=newest" class="btn btn-link">عرض الكل</a>
+    </div>
+
+    <div class="swiper" id="newProductsCarousel">
+      <div class="swiper-wrapper">
+        {% for product in new_products|default:products %}
+          <div class="swiper-slide" dir="rtl">
+            <div class="card product-card h-100 shadow-sm">
+              <button class="btn btn-light btn-sm favorite-toggle position-absolute top-0 end-0 m-2" data-product-id="{{ product.id }}" aria-label="إضافة للمفضلة">
+                <i class="bi bi-heart"></i>
+              </button>
+              <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none">
+                {% if product.images.first %}
+                  <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.name }}">
+                {% else %}
+                  <img src="{% static 'core/no_image.png' %}" class="product-img" alt="لا توجد صورة">
+                {% endif %}
+              </a>
+              <div class="card-body">
+                <h6 class="card-title text-truncate-2" title="{{ product.name }}">{{ product.name }}</h6>
+                <div class="d-flex align-items-center gap-2">
+                  {% if product.discount_percent %}
+                    <span class="text-danger product-price">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
+                    <small class="product-old">{{ product.price|floatformat:2 }} د.ل</small>
+                    <span class="badge bg-warning text-dark">-{{ product.discount_percent }}%</span>
+                  {% else %}
+                    <span class="product-price">{{ product.price|floatformat:2 }} د.ل</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="text-muted">لا توجد منتجات حالياً.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}

@@ -7,6 +7,9 @@ urlpatterns = [
     # واجهة عامة
     path('', views.products_list, name='products_list'),
     path('detail/<slug:slug>/', views.product_detail, name='product_detail'),
+    
+    # المفضلة
+    path('favorites/toggle/', views.toggle_favorite, name='toggle_favorite'),
 
     # السلة (جلسة)
     path('cart/', views.view_cart, name='view_cart'),

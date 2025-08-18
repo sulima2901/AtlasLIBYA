@@ -1,63 +1,69 @@
 {% extends "core/base.html" %}
 {% load static %}
 {% block title %}كل المنتجات | AtlasLY{% endblock %}
-{% block content %}
 
+{% block content %}
 <section class="section">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="section-title m-0">كل المنتجات</h1>
+    <div id="productsTopSearch" class="products-top-search">
+      <form id="productsSearchForm" class="d-flex gap-2 justify-content-center" method="get" action=".">
+        <div class="input-group" style="max-width:720px;">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="search" class="form-control" name="q" value="{{ request.GET.q }}" placeholder="ابحث عن منتج...">
+          <button class="btn btn-primary" type="submit">بحث</button>
+        </div>
+      </form>
     </div>
 
-    {% if products %}
-      <div class="row g-4 justify-content-center">
-        {% for product in products %}
-          <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <div class="card product-card h-100 shadow-sm">
-              <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none">
-                {% if product.images.first %}
-                  <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.images.first.alt_text|default:product.name }}">
-                {% else %}
-                  <img src="{% static 'core/no_image.png' %}" class="product-img" alt="لا توجد صورة">
-                {% endif %}
-              </a>
+    <div class="row g-4 mt-1">
+      <aside class="col-12 col-lg-3">
+        <div class="sticky-aside">
+          <form id="filtersForm" method="get" action=".">
+            <div class="card shadow-sm">
               <div class="card-body">
-                <h5 class="card-title fw-semibold mb-2" style="min-height:48px;">
-                  <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none text-dark">
-                    {{ product.name }}
-                  </a>
-                </h5>
-                <div class="d-flex align-items-center gap-2">
-                  {% if product.discount_percent %}
-                    <span class="text-danger product-price">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
-                    <small class="product-old">{{ product.price|floatformat:2 }} د.ل</small>
-                    <span class="badge bg-warning text-dark">-{{ product.discount_percent }}%</span>
-                  {% else %}
-                    <span class="product-price">{{ product.price|floatformat:2 }} د.ل</span>
-                  {% endif %}
+                <h5 class="card-title mb-3">الفلاتر</h5>
+                {% if categories %}
+                  <div class="mb-3">
+                    <label class="form-label">التصنيف</label>
+                    <select class="form-select" name="category">
+                      <option value="">الكل</option>
+                      {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                {% endif %}
+                <div class="mb-3">
+                  <label class="form-label">نطاق السعر</label>
+                  <div class="d-flex gap-2">
+                    <input class="form-control" type="number" name="min_price" placeholder="من" value="{{ request.GET.min_price }}">
+                    <input class="form-control" type="number" name="max_price" placeholder="إلى" value="{{ request.GET.max_price }}">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">الترتيب</label>
+                  <select class="form-select" name="sort">
+                    <option value="">الافتراضي</option>
+                    <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>الأحدث</option>
+                    <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>الأرخص</option>
+                    <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>الأغلى</option>
+                    <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>الاسم</option>
+                  </select>
+                </div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-primary" type="submit">تطبيق</button>
+                  <a class="btn btn-outline-secondary" href="{% url 'products:products_list' %}">إزالة الكل</a>
                 </div>
               </div>
-              <div class="card-footer bg-white border-0 d-flex align-items-center">
-                {% if product.stock > 0 %}
-                  <span class="badge bg-success">متوفر</span>
-                  <form action="{% url 'products:add_to_cart' product.id %}" method="post" class="ms-auto">
-                    {% csrf_token %}
-                    <input type="hidden" name="qty" value="1">
-                    <button class="btn btn-primary btn-sm">أضف إلى السلة</button>
-                  </form>
-                {% else %}
-                  <span class="badge bg-secondary">غير متوفر</span>
-                  <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-primary btn-sm ms-auto">تفاصيل</a>
-                {% endif %}
-              </div>
             </div>
-          </div>
-        {% endfor %}
+          </form>
+        </div>
+      </aside>
+
+      <div class="col-12 col-lg-9" id="productsArea">
+        {% include 'products/_grid.html' %}
       </div>
-    {% else %}
-      <div class="alert alert-info">لا توجد منتجات حالياً.</div>
-    {% endif %}
+    </div>
   </div>
 </section>
-
 {% endblock %}
