@@ -13,8 +13,8 @@ urlpatterns = [
     path('products/', include(('products.urls', 'products'), namespace='products')),
     path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
 
-    # لوحة التحكم - كلها تحت /dashboard/ فقط
-    path('dashboard/', include(('dashboard.urls', 'dashboard'), namespace='dashboard')),
+    # لوحة التحكم - كلها تحت /dashboard/ فقط (temporarily disabled for testing)
+    # path('dashboard/', include(('dashboard.urls', 'dashboard'), namespace='dashboard')),
 ]
 
 if settings.DEBUG:

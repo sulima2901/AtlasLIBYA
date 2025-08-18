@@ -24,7 +24,7 @@ INSTALLED_APPS = [
 
     # تطبيقات المشروع
     'accounts',
-    'dashboard',
+    # 'dashboard',  # Temporarily disabled for testing
     'offers',
     'orders',
     'products',
@@ -65,18 +65,26 @@ WSGI_APPLICATION = 'atlasly.wsgi.application'
 # قاعدة البيانات
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'atlasly_db',
-        'USER': 'root',
-        'PASSWORD': 'Sss@king17890',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'use_unicode': True,
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Original MySQL config (for production)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'atlasly_db',
+#         'USER': 'root',
+#         'PASSWORD': 'Sss@king17890',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#         'OPTIONS': {
+#             'charset': 'utf8mb4',
+#             'use_unicode': True,
+#         }
+#     }
+# }
 
 # تحققات كلمات المرور
 AUTH_PASSWORD_VALIDATORS = [
