@@ -11,6 +11,7 @@ urlpatterns = [
     # الموقع العام
     path('', core_views.home, name='home'),
     path('products/', include(('products.urls', 'products'), namespace='products')),
+    path('orders/', include(('orders.urls', 'orders'), namespace='orders')),
     path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
 
     # لوحة التحكم - كلها تحت /dashboard/ فقط

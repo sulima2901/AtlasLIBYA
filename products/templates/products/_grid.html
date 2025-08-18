@@ -1,0 +1,68 @@
+{% load static %}
+<div id="productsGrid" class="row g-4">
+  {% if products %}
+    {% for product in products %}
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card product-card h-100 shadow-sm">
+          <button class="btn btn-light btn-sm favorite-toggle position-absolute top-0 end-0 m-2" data-product-id="{{ product.id }}" aria-label="إضافة للمفضلة">
+            <i class="bi bi-heart"></i>
+          </button>
+          <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none">
+            {% if product.images.first %}
+              <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.images.first.alt_text|default:product.name }}">
+            {% else %}
+              <img src="{% static 'core/no_image.png' %}" class="product-img" alt="لا توجد صورة">
+            {% endif %}
+          </a>
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-2 text-truncate-2" title="{{ product.name }}">
+              <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none text-dark">{{ product.name }}</a>
+            </h6>
+            <div class="d-flex align-items-center gap-2">
+              {% if product.discount_percent %}
+                <span class="text-danger product-price">{{ product.price_after_discount|floatformat:2 }} د.ل</span>
+                <small class="product-old">{{ product.price|floatformat:2 }} د.ل</small>
+                <span class="badge bg-warning text-dark">-{{ product.discount_percent }}%</span>
+              {% else %}
+                <span class="product-price">{{ product.price|floatformat:2 }} د.ل</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="card-footer bg-white border-0 d-flex align-items-center">
+            {% if product.stock > 0 %}
+              <span class="badge bg-success">متوفر</span>
+              <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-primary btn-sm ms-auto">تفاصيل</a>
+            {% else %}
+              <span class="badge bg-secondary">غير متوفر</span>
+              <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-primary btn-sm ms-auto">تفاصيل</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="col-12">
+      <div class="alert alert-info">لا توجد منتجات حالياً.</div>
+    </div>
+  {% endif %}
+</div>
+
+{% if is_paginated %}
+  <nav id="productsPagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}

@@ -11,6 +11,10 @@ def my_orders_view(request):
     # يمكنك لاحقًا جلب الطلبات الخاصة بالمستخدم من قاعدة البيانات هنا
     return render(request, 'orders/my_orders.html')
 
+def checkout(request):
+    # صفحة إتمام الشراء الأساسية
+    return render(request, 'orders/checkout.html')
+
 def products_list(request):
     # يمكنك لاحقًا جلب المنتجات من قاعدة البيانات
     return render(request, "products/products_list.html")
