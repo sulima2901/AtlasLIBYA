@@ -1,6 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Product, Category
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.models import User
+from .models import Product, Category, Favorite
 
 # قائمة المنتجات العامة
 def products_list(request):
@@ -15,7 +19,68 @@ def products_list(request):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
     images = product.images.all()
-    return render(request, 'products/product_detail.html', {'product': product, 'images': images})
+    
+    # Check if product is favorited by current user
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = Favorite.objects.filter(user=request.user, product=product).exists()
+    
+    return render(request, 'products/product_detail.html', {
+        'product': product, 
+        'images': images,
+        'is_favorite': is_favorite
+    })
+
+# Toggle favorite functionality
+@require_http_methods(["POST"])
+def toggle_favorite(request, pk):
+    if not request.user.is_authenticated:
+        # For anonymous users, use session storage
+        favorites = request.session.get('favorites', [])
+        product_id = int(pk)
+        
+        if product_id in favorites:
+            favorites.remove(product_id)
+            is_favorite = False
+            message = "تم إزالة المنتج من المفضلات"
+        else:
+            favorites.append(product_id)
+            is_favorite = True
+            message = "تم إضافة المنتج إلى المفضلات"
+        
+        request.session['favorites'] = favorites
+        request.session.modified = True
+        
+        return JsonResponse({
+            'success': True,
+            'is_favorite': is_favorite,
+            'message': message,
+            'favorites_count': len(favorites)
+        })
+    
+    # For authenticated users, use database
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+    
+    if not created:
+        favorite.delete()
+        is_favorite = False
+        message = "تم إزالة المنتج من المفضلات"
+    else:
+        is_favorite = True
+        message = "تم إضافة المنتج إلى المفضلات"
+    
+    favorites_count = Favorite.objects.filter(user=request.user).count()
+    
+    return JsonResponse({
+        'success': True,
+        'is_favorite': is_favorite,
+        'message': message,
+        'favorites_count': favorites_count
+    })
 
 # ============ سلة مشتريات تعتمد جلسة ============
 def _get_cart(request):
@@ -63,7 +128,7 @@ def view_cart(request):
         subtotal += line_total
         items.append({"product": p, "qty": qty, "unit_price": unit_price, "line_total": line_total})
 
-    return render(request, 'core/cart.html', {"items": items, "subtotal": subtotal})
+    return render(request, 'orders/cart.html', {"items": items, "subtotal": subtotal})
 
 def remove_from_cart(request, pk):
     cart = _get_cart(request)

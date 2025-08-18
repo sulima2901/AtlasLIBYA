@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.auth.models import User
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -44,3 +45,18 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return self.alt_text or f"Image {self.id}"
+
+class Favorite(models.Model):
+    """User favorites/wishlist - NEW model for wishlist functionality"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        verbose_name = 'مفضلة'
+        verbose_name_plural = 'المفضلات'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
