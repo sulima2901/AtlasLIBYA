@@ -1,0 +1,2 @@
+# Creating a simple no-image placeholder
+# We'll create it via convert command if available, or download from a placeholder service
