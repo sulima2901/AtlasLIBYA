@@ -10,14 +10,14 @@
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="{% block og_title %}{% block title %}AtlasLY{% endblock %}{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}{% block description %}متجر أطلس ليبيا الإلكتروني{% endblock %}{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{% if block.super %}{{ block.super }}{% else %}AtlasLY{% endif %}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{% if block.super %}{{ block.super }}{% else %}متجر أطلس ليبيا الإلكتروني{% endif %}{% endblock %}">
   <meta property="og:site_name" content="AtlasLY">
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:title" content="{% block twitter_title %}{% block title %}AtlasLY{% endblock %}{% endblock %}">
-  <meta property="twitter:description" content="{% block twitter_description %}{% block description %}متجر أطلس ليبيا الإلكتروني{% endblock %}{% endblock %}">
+  <meta property="twitter:title" content="{% block twitter_title %}{% if block.super %}{{ block.super }}{% else %}AtlasLY{% endif %}{% endblock %}">
+  <meta property="twitter:description" content="{% block twitter_description %}{% if block.super %}{{ block.super }}{% else %}متجر أطلس ليبيا الإلكتروني{% endif %}{% endblock %}">>
   
   <!-- Preconnect for performance -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
