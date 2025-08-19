@@ -70,10 +70,6 @@
               {% endif %}
             </a>
           </li>
-          <!-- إظهار رابط لوحة التحكم فقط للمستخدمين staff -->
-          {% if request.user.is_staff %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:dashboard_home' %}">لوحة التحكم</a></li>
-          {% endif %}
         </ul>
 
         <ul class="navbar-nav mb-2 mb-lg-0">

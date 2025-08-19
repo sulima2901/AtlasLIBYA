@@ -316,3 +316,116 @@ def favorites_list(request):
     return render(request, 'products/favorites_list.html', {
         'favorites': page_obj
     })
+
+def products_filter_api(request):
+    """API endpoint for filtering products with AJAX"""
+    products = Product.objects.filter(is_active=True).select_related('category')
+    
+    # Search
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query) |
+            Q(brand__icontains=search_query)
+        )
+    
+    # Category filter (supports multiple categories)
+    category_filter = request.GET.get('category')
+    if category_filter:
+        category_slugs = category_filter.split(',')
+        products = products.filter(category__slug__in=category_slugs)
+    
+    # Brand filter (supports multiple brands)
+    brand_filter = request.GET.get('brand')
+    if brand_filter:
+        brands = brand_filter.split(',')
+        products = products.filter(brand__in=brands)
+    
+    # Price filtering
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            min_price = float(min_price)
+            products = products.filter(price__gte=min_price)
+        except ValueError:
+            pass
+    if max_price:
+        try:
+            max_price = float(max_price)
+            products = products.filter(price__lte=max_price)
+        except ValueError:
+            pass
+    
+    # Special filters
+    if request.GET.get('new'):
+        from datetime import timedelta
+        from django.utils import timezone
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        products = products.filter(created_at__gte=thirty_days_ago)
+    
+    if request.GET.get('offers'):
+        products = products.filter(Q(is_on_offer=True) | Q(discount_percent__gt=0))
+    
+    # Sorting
+    sort_by = request.GET.get('sort', '-created_at')
+    if sort_by in ['-created_at', 'name', 'price', '-price']:
+        products = products.order_by(sort_by)
+    else:
+        products = products.order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Prepare JSON response
+    products_data = []
+    for product in page_obj:
+        # Get first image
+        image_url = None
+        first_image = product.images.first()
+        if first_image and first_image.image:
+            image_url = first_image.image.url
+            
+        products_data.append({
+            'id': product.id,
+            'name': product.name,
+            'slug': product.slug,
+            'price': f"{product.price_after_discount:,.0f}",
+            'original_price': f"{product.price:,.0f}" if product.discount_percent > 0 else None,
+            'discount_percent': product.discount_percent if product.discount_percent > 0 else None,
+            'image': image_url,
+            'short_description': product.description[:100] + '...' if product.description and len(product.description) > 100 else product.description,
+            'is_new': product.is_new,
+            'is_on_offer': product.is_on_offer,
+            'category': product.category.name if product.category else None,
+            'brand': product.brand,
+            'stock': product.stock,
+        })
+    
+    # Pagination info
+    pagination = {
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'total_count': paginator.count
+    }
+    
+    return JsonResponse({
+        'products': products_data,
+        'pagination': pagination,
+        'total_count': paginator.count,
+        'current_filters': {
+            'search': search_query,
+            'category': category_filter,
+            'brand': brand_filter,
+            'min_price': min_price,
+            'max_price': max_price,
+            'sort': sort_by
+        }
+    })

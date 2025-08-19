@@ -37,8 +37,58 @@ body {
   color: var(--text-primary) !important;
 }
 
+/* ===== تحسين شريط التنقل ===== */
 .navbar {
   background-color: var(--navbar-bg) !important;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.navbar.sticky-top {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  backdrop-filter: blur(8px);
+}
+
+.navbar-brand {
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.navbar-nav .nav-link:hover {
+  background: rgba(13, 110, 253, 0.1);
+  color: var(--bs-primary) !important;
+}
+
+.navbar-nav .nav-link.active {
+  background: var(--bs-primary);
+  color: white !important;
+}
+
+/* Dark mode navbar enhancements */
+[data-theme="dark"] .navbar {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .navbar-nav .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .text-muted {
@@ -49,8 +99,157 @@ body {
   border-color: var(--border-color) !important;
 }
 html{ scroll-behavior:smooth; }
-html{ 
-  scroll-behavior:smooth; 
+/* ===== تحسينات تفاعلية عامة ===== */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* تحسين الأزرار */
+.btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+/* تحسين البطاقات */
+.card {
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--bs-primary);
+}
+
+/* تحسين الإدخالات */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  transform: translateY(-1px);
+}
+
+/* تحسين الروابط */
+a {
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--bs-primary);
+}
+
+/* تحسين الـ badges */
+.badge {
+  border-radius: 6px;
+  padding: 0.5em 0.75em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+/* تحسين التنبيهات */
+.alert {
+  border-radius: var(--radius);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.alert::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+/* تحسين تأثيرات الـ Focus */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* تحسين الـ Loading states */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+[data-theme="dark"] .loading-shimmer {
+  background: linear-gradient(90deg, #2d2d2d 25%, #3d3d3d 50%, #2d2d2d 75%);
+  background-size: 200px 100%;
+}
+
+/* تحسين الـ Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bs-primary);
 }
 
 body{

@@ -219,6 +219,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize carousel manager
     window.carouselManager = new CarouselManager();
     
+    // Initialize navbar manager
+    window.navbarManager = new NavbarManager();
+    
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -569,6 +572,65 @@ class CarouselManager {
     }
 }
 
+// Enhanced Navbar Manager
+class NavbarManager {
+    constructor() {
+        this.navbar = document.querySelector('.navbar');
+        this.lastScrollY = window.scrollY;
+        this.isScrolling = false;
+        this.init();
+    }
+
+    init() {
+        if (!this.navbar) return;
+        
+        this.bindScrollBehavior();
+        this.highlightActiveLink();
+    }
+
+    bindScrollBehavior() {
+        let scrollTimeout;
+        
+        window.addEventListener('scroll', () => {
+            if (!scrollTimeout) {
+                scrollTimeout = setTimeout(() => {
+                    this.handleScroll();
+                    scrollTimeout = null;
+                }, 10);
+            }
+        });
+    }
+
+    handleScroll() {
+        const currentScrollY = window.scrollY;
+        
+        // Always keep navbar visible - no hiding behavior
+        if (currentScrollY > 100) {
+            this.navbar.classList.add('scrolled');
+        } else {
+            this.navbar.classList.remove('scrolled');
+        }
+        
+        this.lastScrollY = currentScrollY;
+    }
+
+    highlightActiveLink() {
+        const currentPath = window.location.pathname;
+        const navLinks = this.navbar.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            
+            const href = link.getAttribute('href');
+            if (href === currentPath || 
+                (currentPath.startsWith('/products/') && href === '/products/') ||
+                (currentPath.startsWith('/offers/') && href === '/offers/')) {
+                link.classList.add('active');
+            }
+        });
+    }
+}
+
 // Export for use in other scripts
 window.ThemeManager = ThemeManager;
 window.ToastManager = ToastManager;
@@ -576,3 +638,4 @@ window.FavoritesManager = FavoritesManager;
 window.SearchManager = SearchManager;
 window.AnnouncementManager = AnnouncementManager;
 window.CarouselManager = CarouselManager;
+window.NavbarManager = NavbarManager;
