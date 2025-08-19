@@ -1,0 +1,187 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}العروض الخاصة | AtlasLY{% endblock %}
+{% block description %}تصفح أحدث العروض والخصومات على منتجاتنا المميزة بأفضل الأسعار{% endblock %}
+
+{% block content %}
+<div class="hero bg-gradient text-white text-center py-5 mb-4 rounded">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">
+      <i class="bi bi-lightning-fill me-2"></i>العروض الخاصة
+    </h1>
+    <p class="lead mb-0">اكتشف أفضل العروض والخصومات على منتجاتنا المميزة</p>
+    <p class="text-white-50">{{ total_offers }} منتج في عرض خاص</p>
+  </div>
+</div>
+
+<div class="row">
+  <!-- فلاتر جانبية -->
+  <div class="col-lg-3 mb-4">
+    <div class="bg-white rounded shadow-sm p-4 sticky-top" style="top: 100px;">
+      <h5 class="fw-bold mb-3">
+        <i class="bi bi-funnel me-2"></i>الفلاتر
+      </h5>
+      
+      <form method="GET" class="mb-4">
+        <!-- البحث -->
+        <div class="mb-3">
+          <label class="form-label small text-muted">البحث في العروض</label>
+          <div class="input-group input-group-sm">
+            <input type="search" 
+                   name="q" 
+                   value="{{ search_query }}" 
+                   class="form-control" 
+                   placeholder="ابحث عن منتج...">
+            <button type="submit" class="btn btn-outline-primary">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- التصنيفات -->
+        {% if categories_with_offers %}
+        <div class="mb-3">
+          <label class="form-label small text-muted">التصنيف</label>
+          <select name="category" class="form-select form-select-sm">
+            <option value="">جميع التصنيفات</option>
+            {% for category_name, category_slug in categories_with_offers %}
+              <option value="{{ category_slug }}" {% if request.GET.category == category_slug %}selected{% endif %}>
+                {{ category_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        
+        <!-- الترتيب -->
+        <div class="mb-3">
+          <label class="form-label small text-muted">ترتيب حسب</label>
+          <select name="sort" class="form-select form-select-sm">
+            <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>الأحدث</option>
+            <option value="price" {% if current_sort == 'price' %}selected{% endif %}>السعر: من الأقل للأعلى</option>
+            <option value="-price" {% if current_sort == '-price' %}selected{% endif %}>السعر: من الأعلى للأقل</option>
+            <option value="name" {% if current_sort == 'name' %}selected{% endif %}>الاسم أبجدياً</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-sm w-100">تطبيق الفلاتر</button>
+      </form>
+      
+      <a href="{% url 'offers_list' %}" class="btn btn-outline-secondary btn-sm w-100">
+        <i class="bi bi-arrow-clockwise me-1"></i>إعادة تعيين
+      </a>
+    </div>
+  </div>
+  
+  <!-- قائمة المنتجات -->
+  <div class="col-lg-9">
+    {% if search_query %}
+      <div class="alert alert-info">
+        <i class="bi bi-search me-2"></i>نتائج البحث عن "{{ search_query }}" في العروض
+      </div>
+    {% endif %}
+    
+    {% if products %}
+      <!-- عدد النتائج -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+          <span class="badge bg-danger me-2">{{ total_offers }}</span>
+          منتج في عرض خاص
+        </h5>
+      </div>
+      
+      <!-- شبكة المنتجات -->
+      <div class="row">
+        {% for product in products %}
+          <div class="col-lg-4 col-md-6 mb-4">
+            {% include "core/partials/product_card.html" with product=product show_heart=True %}
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- التنقل بين الصفحات -->
+      {% if page_obj.has_other_pages %}
+        <nav aria-label="تنقل الصفحات" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                  السابق
+                </a>
+              </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}">
+                  التالي
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+      
+    {% else %}
+      <!-- لا توجد عروض -->
+      <div class="text-center py-5">
+        <div class="empty-state">
+          <i class="bi bi-gift display-1 text-muted mb-3"></i>
+          <h3 class="text-muted">لا توجد عروض حالياً</h3>
+          <p class="text-muted">
+            {% if search_query %}
+              لم يتم العثور على عروض تحتوي على "{{ search_query }}"
+            {% else %}
+              سنضيف عروضاً جديدة قريباً. تابعنا للحصول على أفضل الصفقات!
+            {% endif %}
+          </p>
+          <div class="mt-4">
+            {% if search_query %}
+              <a href="{% url 'offers_list' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>عرض جميع العروض
+              </a>
+            {% endif %}
+            <a href="{% url 'products:products_list' %}" class="btn btn-outline-primary">
+              <i class="bi bi-grid me-2"></i>تصفح المنتجات
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.hero {
+  background: var(--hero-gradient);
+}
+
+.empty-state {
+  padding: 3rem 0;
+}
+
+.sticky-top {
+  top: 100px !important;
+}
+
+@media (max-width: 991px) {
+  .sticky-top {
+    position: relative !important;
+    top: 0 !important;
+  }
+}
+</style>
+{% endblock %}

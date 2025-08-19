@@ -13,18 +13,26 @@ def notifications(request):
     
     # المفضلة للمستخدم المسجل
     user_favorites = []
+    user_favorites_ids = []
+    favorites_count = 0
+    
     if request.user.is_authenticated:
         try:
             from products.models import Favorite
-            user_favorites = list(Favorite.objects.filter(
-                user=request.user
-            ).values_list('product_id', flat=True))
+            favorites_qs = Favorite.objects.filter(user=request.user).select_related('product')
+            user_favorites = list(favorites_qs)
+            user_favorites_ids = [fav.product.id for fav in user_favorites]
+            favorites_count = len(user_favorites)
         except:
             user_favorites = []
+            user_favorites_ids = []
+            favorites_count = 0
 
     return {
         "notif_latest": latest,
         "notif_unread_count": unread_count,
         "cart_count": cart_count,
-        "user_favorites": user_favorites
+        "user_favorites": user_favorites,
+        "user_favorites_ids": user_favorites_ids,
+        "favorites_count": favorites_count,
     }

@@ -1,11 +1,59 @@
 :root{
   --container-max: 1200px;
   --radius: 12px;
+  
+  /* Light mode colors */
+  --bg-body: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-primary: #222222;
+  --text-secondary: #6c757d;
+  --text-muted: #888888;
+  --border-color: #dee2e6;
+  --navbar-bg: #ffffff;
+  --hero-gradient: linear-gradient(135deg, #0d6efd 20%, #4aa3ff 100%);
+}
+
+/* Dark mode colors */
+[data-theme="dark"] {
+  --bg-body: #1a1a1a;
+  --bg-card: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888888;
+  --border-color: #404040;
+  --navbar-bg: #2d2d2d;
+  --hero-gradient: linear-gradient(135deg, #0d6efd 20%, #1a5490 100%);
+}
+
+/* Apply theme variables */
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-white, .card, .bg-body-tertiary {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.navbar {
+  background-color: var(--navbar-bg) !important;
+}
+
+.text-muted {
+  color: var(--text-secondary) !important;
+}
+
+.border {
+  border-color: var(--border-color) !important;
 }
 html{ scroll-behavior:smooth; }
+html{ 
+  scroll-behavior:smooth; 
+}
+
 body{
-  background:#f8f9fa;
-  color:#222;
   line-height:1.75;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;

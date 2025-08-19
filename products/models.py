@@ -47,7 +47,9 @@ class Product(models.Model):
             return self.offer_price
         # وإلا استخدم الخصم العادي
         if self.discount_percent:
-            return self.price * (1 - self.discount_percent / 100)
+            from decimal import Decimal
+            discount_factor = Decimal(str(1 - self.discount_percent / 100))
+            return self.price * discount_factor
         return self.price
 
     def is_new(self):
