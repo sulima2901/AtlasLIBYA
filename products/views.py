@@ -118,7 +118,54 @@ def products_list(request):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
     images = product.images.all()
-    return render(request, 'products/product_detail.html', {'product': product, 'images': images})
+    
+    # Check if user has favorited this product
+    user_has_favorited = False
+    if request.user.is_authenticated:
+        user_has_favorited = Favorite.objects.filter(
+            user=request.user, 
+            product=product
+        ).exists()
+    
+    # Related products from same category
+    related_products = Product.objects.filter(
+        category=product.category,
+        is_active=True
+    ).exclude(id=product.id)[:6]
+    
+    # Generate structured data for SEO
+    structured_data = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.name,
+        "description": product.description,
+        "brand": {
+            "@type": "Brand",
+            "name": product.brand if product.brand else "AtlasLY"
+        },
+        "category": product.category.name if product.category else "",
+        "offers": {
+            "@type": "Offer",
+            "priceCurrency": "LYD",
+            "price": float(product.price_after_discount),
+            "availability": "https://schema.org/InStock" if product.stock > 0 else "https://schema.org/OutOfStock",
+            "seller": {
+                "@type": "Organization",
+                "name": "AtlasLY"
+            }
+        }
+    }
+    
+    if images.first():
+        structured_data["image"] = request.build_absolute_uri(images.first().image.url)
+    
+    return render(request, 'products/product_detail.html', {
+        'product': product, 
+        'images': images,
+        'user_has_favorited': user_has_favorited,
+        'related_products': related_products,
+        'structured_data': json.dumps(structured_data),
+    })
 
 # ============ سلة مشتريات تعتمد جلسة ============
 def _get_cart(request):

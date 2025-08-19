@@ -1,6 +1,26 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load humanize %}
+
 {% block title %}{{ product.name }} | AtlasLY{% endblock %}
+{% block description %}{{ product.description|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ product.name }} | AtlasLY{% endblock %}
+{% block og_description %}{{ product.description|truncatechars:155 }}{% endblock %}
+
+{% block extra_head %}
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{{ structured_data|safe }}
+</script>
+
+<!-- Open Graph Product Data -->
+{% if images.first %}
+<meta property="og:image" content="{{ request.build_absolute_uri:images.first.image.url }}">
+<meta property="twitter:image" content="{{ request.build_absolute_uri:images.first.image.url }}">
+{% endif %}
+<meta property="product:price:amount" content="{{ product.price_after_discount }}">
+<meta property="product:price:currency" content="LYD">
+{% endblock %}
 {% block content %}
 
 <section class="section">
@@ -201,8 +221,18 @@
             </div>
           {% endif %}
 
-          <!-- المشاركة -->
+          <!-- المشاركة والمفضلة -->
           <div class="social-actions mt-4 pt-3 border-top">
+            {% if user.is_authenticated %}
+              <button class="btn {% if user_has_favorited %}btn-danger{% else %}btn-outline-danger{% endif %} w-100 btn-sm mb-2 favorite-btn" 
+                      type="button" 
+                      data-product-id="{{ product.id }}"
+                      data-bs-toggle="tooltip"
+                      title="{% if user_has_favorited %}إزالة من المفضلة{% else %}إضافة للمفضلة{% endif %}">
+                <i class="bi bi-heart{% if user_has_favorited %}-fill{% endif %} me-2"></i>
+                {% if user_has_favorited %}في المفضلة{% else %}أضف للمفضلة{% endif %}
+              </button>
+            {% endif %}
             <button class="btn btn-outline-secondary w-100 btn-sm" type="button" id="shareBtn">
               <i class="bi bi-share me-2"></i>مشاركة المنتج
             </button>
