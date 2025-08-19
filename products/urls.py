@@ -20,4 +20,8 @@ urlpatterns = [
     
     # شراء فوري
     path('buy-now/<int:pk>/', views.buy_now, name='buy_now'),
+    
+    # AJAX APIs
+    path('api/live-search/', views.live_search_api, name='live_search_api'),
+    path('api/filter/', views.products_filter_api, name='products_filter_api'),
 ]

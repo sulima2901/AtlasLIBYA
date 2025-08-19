@@ -5,12 +5,43 @@
 {% block content %}
 <section class="hero">
   <div class="container text-center">
-    <img src="{% static 'core/atlasly_logo.png' %}" alt="Logo" class="img-fluid mb-3" style="width: 82px;">
-    <h1 class="mb-2">مرحبًا بك في AtlasLY</h1>
-    <p class="lead mb-4">متجرك الأول في ليبيا لبيع اللابتوبات وأجهزة الكمبيوتر والإكسسوارات الأصلية.</p>
-    <a href="{% url 'products:products_list' %}" class="btn btn-light btn-lg shadow-sm px-4">تسوق الآن</a>
+    <!-- Subtle hero text as requested -->
+    <h1 class="hero-title mb-4">مرحباً بك في AtlasLY</h1>
+    
+    <!-- Prominent site-wide search bar below hero -->
+    <div class="search-section mb-4">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="search-wrapper position-relative">
+            <input type="text" 
+                   class="form-control form-control-lg search-input" 
+                   id="globalSearchInput"
+                   placeholder="ابحث عن منتجك المفضل..."
+                   autocomplete="off">
+            <button class="btn btn-primary search-btn" type="button">
+              <i class="bi bi-search"></i>
+            </button>
+            <!-- Live search results -->
+            <div id="searchResults" class="search-results position-absolute w-100 bg-white shadow-lg rounded d-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+<!-- Dismissible announcement banner above favorites -->
+<div id="announcementBanner" class="announcement-banner bg-primary text-white py-2" style="display: none;">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="announcement-content">
+        <i class="bi bi-megaphone me-2"></i>
+        <span id="announcementText">🎉 عروض خاصة على أحدث اللابتوبات! خصم يصل إلى 25% لفترة محدودة</span>
+      </div>
+      <button class="btn-close btn-close-white" id="dismissAnnouncement" aria-label="إغلاق"></button>
+    </div>
+  </div>
+</div>
 
 <!-- قسم المنتجات الجديدة -->
 {% if new_products %}
