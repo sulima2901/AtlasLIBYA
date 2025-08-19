@@ -316,3 +316,129 @@ def favorites_list(request):
     return render(request, 'products/favorites_list.html', {
         'favorites': page_obj
     })
+
+# ============ AJAX API للبحث المباشر ============
+def live_search_api(request):
+    """API للبحث المباشر في الصفحة الرئيسية"""
+    query = request.GET.get('q', '').strip()
+    
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+    
+    # البحث في المنتجات المفعلة
+    products = Product.objects.filter(
+        is_active=True
+    ).filter(
+        Q(name__icontains=query) | 
+        Q(description__icontains=query) |
+        Q(brand__icontains=query)
+    ).select_related('category')[:8]  # أقصى 8 نتائج للبحث المباشر
+    
+    results = []
+    for product in products:
+        # تحضير صورة المنتج
+        image_url = product.images.first().image.url if product.images.first() else '/static/core/no_image.png'
+        
+        # تحضير السعر
+        if product.is_on_offer and product.offer_price:
+            price_html = f'<span class="text-danger fw-bold">{product.offer_price:.2f} د.ل</span>'
+            price_html += f' <del class="text-muted small">{product.price:.2f} د.ل</del>'
+        elif product.discount_percent:
+            discounted_price = product.price - (product.price * product.discount_percent / 100)
+            price_html = f'<span class="text-danger fw-bold">{discounted_price:.2f} د.ل</span>'
+            price_html += f' <del class="text-muted small">{product.price:.2f} د.ل</del>'
+        else:
+            price_html = f'<span class="fw-bold">{product.price:.2f} د.ل</span>'
+        
+        results.append({
+            'id': product.id,
+            'name': product.name,
+            'slug': product.slug,
+            'brand': product.brand or '',
+            'price_html': price_html,
+            'image_url': image_url,
+            'url': f'/products/detail/{product.slug}/',
+            'stock': product.stock,
+            'is_available': product.stock > 0
+        })
+    
+    return JsonResponse({'results': results})
+
+def products_filter_api(request):
+    """API لفلترة المنتجات مع AJAX"""
+    products = Product.objects.filter(is_active=True).select_related('category')
+    
+    # البحث
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query) |
+            Q(brand__icontains=search_query)
+        )
+    
+    # فلترة حسب التصنيف
+    category_filter = request.GET.get('category')
+    if category_filter:
+        products = products.filter(category__slug=category_filter)
+    
+    # فلترة حسب العلامة التجارية
+    brand_filter = request.GET.get('brand')
+    if brand_filter:
+        products = products.filter(brand__iexact=brand_filter)
+    
+    # فلترة حسب السعر
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+    
+    # الترتيب
+    sort_by = request.GET.get('sort', '-created_at')
+    allowed_sorts = ['-created_at', 'created_at', 'name', '-name', 'price', '-price']
+    if sort_by in allowed_sorts:
+        products = products.order_by(sort_by)
+    
+    # الصفحات
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(products, 12)
+    page_obj = paginator.get_page(page_number)
+    
+    # تحضير البيانات للإرسال
+    products_data = []
+    for product in page_obj:
+        # تحضير صورة المنتج
+        image_url = product.images.first().image.url if product.images.first() else '/static/core/no_image.png'
+        
+        products_data.append({
+            'id': product.id,
+            'name': product.name,
+            'slug': product.slug,
+            'brand': product.brand or '',
+            'price': float(product.price),
+            'offer_price': float(product.offer_price) if product.offer_price else None,
+            'discount_percent': product.discount_percent,
+            'image_url': image_url,
+            'url': f'/products/detail/{product.slug}/',
+            'stock': product.stock,
+            'is_available': product.stock > 0,
+            'is_on_offer': product.is_on_offer,
+            'is_new': product.is_new if hasattr(product, 'is_new') else False,
+        })
+    
+    return JsonResponse({
+        'products': products_data,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_count': paginator.count
+    })
