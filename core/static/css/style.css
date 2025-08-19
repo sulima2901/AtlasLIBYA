@@ -37,8 +37,58 @@ body {
   color: var(--text-primary) !important;
 }
 
+/* ===== تحسين شريط التنقل ===== */
 .navbar {
   background-color: var(--navbar-bg) !important;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.navbar.sticky-top {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  backdrop-filter: blur(8px);
+}
+
+.navbar-brand {
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.navbar-nav .nav-link:hover {
+  background: rgba(13, 110, 253, 0.1);
+  color: var(--bs-primary) !important;
+}
+
+.navbar-nav .nav-link.active {
+  background: var(--bs-primary);
+  color: white !important;
+}
+
+/* Dark mode navbar enhancements */
+[data-theme="dark"] .navbar {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .navbar-nav .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .text-muted {
@@ -49,14 +99,362 @@ body {
   border-color: var(--border-color) !important;
 }
 html{ scroll-behavior:smooth; }
-html{ 
-  scroll-behavior:smooth; 
+/* ===== تحسينات تفاعلية عامة ===== */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* تحسين الأزرار */
+.btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+/* تحسين البطاقات */
+.card {
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--bs-primary);
+}
+
+/* تحسين الإدخالات */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  transform: translateY(-1px);
+}
+
+/* تحسين الروابط */
+a {
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--bs-primary);
+}
+
+/* تحسين الـ badges */
+.badge {
+  border-radius: 6px;
+  padding: 0.5em 0.75em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+/* تحسين التنبيهات */
+.alert {
+  border-radius: var(--radius);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.alert::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+/* تحسين تأثيرات الـ Focus */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* تحسين الـ Loading states */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+[data-theme="dark"] .loading-shimmer {
+  background: linear-gradient(90deg, #2d2d2d 25%, #3d3d3d 50%, #2d2d2d 75%);
+  background-size: 200px 100%;
+}
+
+/* تحسين الـ Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bs-primary);
 }
 
 body{
   line-height:1.75;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+}
+
+/* ===== الصفحة الرئيسية ===== */
+.hero-welcome {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  opacity: 0.9;
+}
+
+/* ===== شريط البحث الرئيسي ===== */
+.search-container {
+  max-width: 100%;
+}
+
+.search-container .form-control {
+  padding-right: 60px;
+  border-radius: 50px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.search-container .form-control:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  transform: translateY(-2px);
+}
+
+.search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  z-index: 3;
+}
+
+.search-results {
+  top: calc(100% + 8px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background-color: var(--bg-body);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* ===== بانر الإعلانات ===== */
+.announcement-banner {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0;
+}
+
+.announcement-banner .alert {
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  margin: 0;
+  padding: 1rem;
+}
+
+[data-theme="dark"] .announcement-banner {
+  background: linear-gradient(135deg, #1a237e 0%, #4a148c 100%);
+}
+
+[data-theme="dark"] .announcement-banner .alert {
+  color: var(--text-primary);
+}
+
+/* ===== محسّن للكاروسيل ===== */
+.product-carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.product-carousel {
+  display: flex;
+  transition: transform 0.3s ease-in-out;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.product-carousel:active {
+  cursor: grabbing;
+}
+
+.product-carousel .product-card-modern {
+  flex: 0 0 auto;
+  margin-left: 1rem;
+  scroll-snap-align: start;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e9ecef;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+.carousel-btn:hover {
+  background: white;
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-btn-prev {
+  right: 10px;
+}
+
+.carousel-btn-next {
+  left: 10px;
+}
+
+[data-theme="dark"] .carousel-btn {
+  background: rgba(45, 45, 45, 0.95);
+  border-color: #404040;
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .carousel-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+/* تحسين استجابة الكاروسيل */
+@media (max-width: 1200px) {
+  .product-carousel .product-card-modern {
+    margin-left: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .carousel-btn-prev {
+    right: 5px;
+  }
+  
+  .carousel-btn-next {
+    left: 5px;
+  }
+  
+  .product-carousel .product-card-modern {
+    margin-left: 0.5rem;
+  }
 }
 
 .container,

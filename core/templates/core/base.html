@@ -64,16 +64,12 @@
             <a class="nav-link position-relative" href="{% url 'products:view_cart' %}">
               <i class="bi bi-cart me-1"></i>السلة
               {% if cart_count and cart_count > 0 %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary cart-count">
                   {{ cart_count }}
                 </span>
               {% endif %}
             </a>
           </li>
-          <!-- إظهار رابط لوحة التحكم فقط للمستخدمين staff -->
-          {% if request.user.is_staff %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:dashboard_home' %}">لوحة التحكم</a></li>
-          {% endif %}
         </ul>
 
         <ul class="navbar-nav mb-2 mb-lg-0">

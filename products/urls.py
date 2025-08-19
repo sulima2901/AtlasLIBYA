@@ -7,6 +7,10 @@ urlpatterns = [
     # واجهة عامة
     path('', views.products_list, name='products_list'),
     path('detail/<slug:slug>/', views.product_detail, name='product_detail'),
+    
+    # API endpoints
+    path('api/filter/', views.products_filter_api, name='products_filter_api'),
+    path('api/cart/update/', views.cart_update_api, name='cart_update_api'),
 
     # السلة (جلسة)
     path('cart/', views.view_cart, name='view_cart'),

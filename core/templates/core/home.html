@@ -3,12 +3,39 @@
 {% block title %}AtlasLY | الرئيسية{% endblock %}
 
 {% block content %}
+<!-- Hero Section with Search -->
 <section class="hero">
   <div class="container text-center">
-    <img src="{% static 'core/atlasly_logo.png' %}" alt="Logo" class="img-fluid mb-3" style="width: 82px;">
-    <h1 class="mb-2">مرحبًا بك في AtlasLY</h1>
-    <p class="lead mb-4">متجرك الأول في ليبيا لبيع اللابتوبات وأجهزة الكمبيوتر والإكسسوارات الأصلية.</p>
+    <img src="{% static 'core/atlasly_logo.png' %}" alt="Logo" class="img-fluid mb-3" style="width: 72px;">
+    <h1 class="mb-4 fw-light hero-welcome">مرحبًا بك في AtlasLY</h1>
+    
+    <!-- Site-wide Search Bar -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-lg-8 col-xl-6">
+        <div class="search-container position-relative">
+          <input type="search" id="homeSearch" class="form-control form-control-lg shadow-sm" 
+                 placeholder="ابحث عن منتج، علامة تجارية، أو وصف..." autocomplete="off">
+          <button class="btn btn-primary search-btn" type="button">
+            <i class="bi bi-search"></i>
+          </button>
+          <div id="searchResults" class="search-results position-absolute w-100 shadow-lg"></div>
+        </div>
+      </div>
+    </div>
+    
+    <p class="lead mb-4 text-muted">متجرك الأول في ليبيا لبيع اللابتوبات وأجهزة الكمبيوتر والإكسسوارات الأصلية.</p>
     <a href="{% url 'products:products_list' %}" class="btn btn-light btn-lg shadow-sm px-4">تسوق الآن</a>
+  </div>
+</section>
+
+<!-- Announcement Banner -->
+<section class="announcement-banner" id="announcementBanner">
+  <div class="container">
+    <div class="alert alert-info alert-dismissible fade show mb-0 text-center" role="alert">
+      <i class="bi bi-megaphone me-2"></i>
+      <strong>عرض خاص!</strong> خصم يصل إلى 20% على أجهزة الكمبيوتر المحمولة - لفترة محدودة!
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
   </div>
 </section>
 
@@ -18,7 +45,7 @@
   <div class="container">
     <div class="d-flex align-items-center justify-content-between mb-4">
       <h2 class="section-title text-primary fw-bold m-0">
-        <i class="bi bi-star-fill me-2"></i>المنتجات الجديدة
+        <i class="bi bi-star-fill me-2 fs-5"></i>المنتجات الجديدة
       </h2>
       <a href="{% url 'products:products_list' %}?new=1" class="btn btn-outline-primary btn-sm">عرض الكل</a>
     </div>
@@ -46,7 +73,7 @@
   <div class="container">
     <div class="d-flex align-items-center justify-content-between mb-4">
       <h2 class="section-title text-danger fw-bold m-0">
-        <i class="bi bi-percent me-2"></i>العروض الخاصة
+        <i class="bi bi-percent me-2 fs-5"></i>العروض الخاصة
       </h2>
       <a href="{% url 'products:products_list' %}?offers=1" class="btn btn-outline-danger btn-sm">عرض الكل</a>
     </div>
