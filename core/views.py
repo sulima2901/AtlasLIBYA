@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
 from products.models import Product
 
 def home(request):
@@ -18,6 +19,39 @@ def home(request):
         'new_products': new_products,
         'offer_products': offer_products,
     })
+
+def search_api(request):
+    """API endpoint for live search"""
+    query = request.GET.get('q', '').strip()
+    
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+    
+    # Search products by name, description, and brand
+    products = Product.objects.filter(
+        is_active=True
+    ).filter(
+        Q(name__icontains=query) | 
+        Q(description__icontains=query) |
+        Q(brand__icontains=query)
+    ).select_related('category')[:8]  # Limit to 8 results for dropdown
+    
+    results = []
+    for product in products:
+        # Get first image if available
+        image_url = None
+        first_image = product.images.first()
+        if first_image and first_image.image:
+            image_url = first_image.image.url
+            
+        results.append({
+            'name': product.name,
+            'slug': product.slug,
+            'price': f"{product.price_after_discount:,.0f}",
+            'image': image_url,
+        })
+    
+    return JsonResponse({'results': results})
 
 def offers_list(request):
     """صفحة العروض - عرض المنتجات التي عليها عروض"""

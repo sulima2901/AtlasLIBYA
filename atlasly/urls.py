@@ -14,6 +14,9 @@ urlpatterns = [
     path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
     path('orders/', include(('orders.urls', 'orders'), namespace='orders')),
     path('offers/', core_views.offers_list, name='offers_list'),
+    
+    # API endpoints
+    path('api/search/', core_views.search_api, name='search_api'),
 
     # لوحة التحكم - كلها تحت /dashboard/ فقط
     path('dashboard/', include(('dashboard.urls', 'dashboard'), namespace='dashboard')),
