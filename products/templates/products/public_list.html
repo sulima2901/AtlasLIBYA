@@ -673,28 +673,4 @@ function getCsrfToken() {
 }
 </style>
 
-        <!-- أزرار الترتيب -->
-        <div class="sort-options mb-3">
-          <div class="btn-group" role="group">
-            <a href="?{{ request.GET.urlencode }}&sort=-created_at" 
-               class="btn {% if sort_by == '-created_at' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-              الأحدث
-            </a>
-            <a href="?{{ request.GET.urlencode }}&sort=name" 
-               class="btn {% if sort_by == 'name' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-              الاسم
-            </a>
-            <a href="?{{ request.GET.urlencode }}&sort=price" 
-               class="btn {% if sort_by == 'price' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-              الأرخص
-            </a>
-            <a href="?{{ request.GET.urlencode }}&sort=-price" 
-               class="btn {% if sort_by == '-price' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
-              الأغلى
-            </a>
-          </div>
-        </div>
-
-        <!-- شبكة المنتجات -->
-        {% if products %}
 {% endblock %}
