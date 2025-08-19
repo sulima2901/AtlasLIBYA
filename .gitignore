@@ -140,4 +140,4 @@ Thumbs.db
 media/
 
 # Static files collected for production
-staticfiles/
+staticfiles/db_test.sqlite3
