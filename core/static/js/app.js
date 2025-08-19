@@ -199,6 +199,216 @@ class FavoritesManager {
     }
 }
 
+// Cart Management
+class CartManager {
+    constructor() {
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        // Cart quantity updates
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('.cart-qty-input')) {
+                this.updateQuantity(e.target);
+            }
+        });
+
+        // Add to cart buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.add-to-cart-btn')) {
+                e.preventDefault();
+                this.addToCart(e.target.closest('.add-to-cart-btn'));
+            }
+        });
+
+        // Remove from cart buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-from-cart-btn')) {
+                e.preventDefault();
+                this.removeFromCart(e.target.closest('.remove-from-cart-btn'));
+            }
+        });
+
+        // Quantity adjustment buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.qty-decrease')) {
+                e.preventDefault();
+                this.adjustQuantity(e.target.closest('.qty-decrease'), -1);
+            } else if (e.target.closest('.qty-increase')) {
+                e.preventDefault();
+                this.adjustQuantity(e.target.closest('.qty-increase'), 1);
+            }
+        });
+    }
+
+    async addToCart(button) {
+        const productId = button.dataset.productId;
+        const quantity = parseInt(button.dataset.quantity || '1');
+
+        if (!productId) return;
+
+        try {
+            button.disabled = true;
+            button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>جاري الإضافة...';
+
+            const response = await fetch('/products/api/cart/update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: quantity,
+                    action: 'add'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateCartUI(data);
+                window.toastManager?.show(data.message, 'success');
+                
+                // Animate button
+                button.innerHTML = '<i class="bi bi-check me-1"></i>تمت الإضافة!';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="bi bi-cart-plus me-1"></i>إضافة';
+                    button.disabled = false;
+                }, 2000);
+            } else {
+                window.toastManager?.show(data.message, 'error');
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-cart-plus me-1"></i>إضافة';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            window.toastManager?.show('حدث خطأ في الشبكة', 'error');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-cart-plus me-1"></i>إضافة';
+        }
+    }
+
+    async removeFromCart(button) {
+        const productId = button.dataset.productId;
+
+        if (!productId) return;
+
+        try {
+            const response = await fetch('/products/api/cart/update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    action: 'remove'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateCartUI(data);
+                window.toastManager?.show(data.message, 'success');
+                
+                // Remove item from cart page if present
+                const cartItem = button.closest('.cart-item');
+                if (cartItem) {
+                    cartItem.style.transition = 'all 0.3s ease';
+                    cartItem.style.transform = 'translateX(100%)';
+                    cartItem.style.opacity = '0';
+                    setTimeout(() => cartItem.remove(), 300);
+                }
+            } else {
+                window.toastManager?.show(data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            window.toastManager?.show('حدث خطأ في الشبكة', 'error');
+        }
+    }
+
+    async updateQuantity(input) {
+        const productId = input.dataset.productId;
+        const quantity = parseInt(input.value);
+
+        if (!productId) return;
+
+        try {
+            const response = await fetch('/products/api/cart/update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: quantity,
+                    action: 'update'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateCartUI(data);
+                this.updateItemTotal(productId, data.item_total);
+            } else {
+                window.toastManager?.show(data.message, 'error');
+                // Reset input to previous value if update failed
+                input.value = input.dataset.previousValue || '1';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            window.toastManager?.show('حدث خطأ في الشبكة', 'error');
+        }
+    }
+
+    async adjustQuantity(button, delta) {
+        const qtyInput = button.parentElement.querySelector('.cart-qty-input, .qty-input');
+        if (!qtyInput) return;
+
+        const currentQty = parseInt(qtyInput.value) || 1;
+        const newQty = Math.max(1, currentQty + delta);
+        
+        qtyInput.value = newQty;
+        await this.updateQuantity(qtyInput);
+    }
+
+    updateCartUI(data) {
+        // Update cart count in navbar
+        const cartBadges = document.querySelectorAll('.cart-count');
+        cartBadges.forEach(badge => {
+            if (data.cart_count > 0) {
+                badge.textContent = data.cart_count;
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        });
+
+        // Update cart total if on cart page
+        const cartTotal = document.querySelector('.cart-total');
+        if (cartTotal && data.cart_total) {
+            cartTotal.textContent = data.cart_total + ' د.ل';
+        }
+    }
+
+    updateItemTotal(productId, total) {
+        const totalElement = document.querySelector(`[data-product-id="${productId}"] .item-total`);
+        if (totalElement) {
+            totalElement.textContent = total + ' د.ل';
+        }
+    }
+
+    getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+               document.querySelector('meta[name=csrf-token]')?.content || '';
+    }
+}
+
 // Initialize on DOM content loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize theme manager
@@ -221,6 +431,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize navbar manager
     window.navbarManager = new NavbarManager();
+    
+    // Initialize cart manager
+    window.cartManager = new CartManager();
     
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -639,3 +852,4 @@ window.SearchManager = SearchManager;
 window.AnnouncementManager = AnnouncementManager;
 window.CarouselManager = CarouselManager;
 window.NavbarManager = NavbarManager;
+window.CartManager = CartManager;

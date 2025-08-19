@@ -258,10 +258,14 @@ def toggle_favorite(request):
             is_favorite = False
         else:
             is_favorite = True
+        
+        # Get updated favorites count
+        favorites_count = Favorite.objects.filter(user=request.user).count()
             
         return JsonResponse({
             'success': True,
             'is_favorite': is_favorite,
+            'favorites_count': favorites_count,
             'message': 'تمت إضافة المنتج للمفضلة' if is_favorite else 'تمت إزالة المنتج من المفضلة'
         })
         
@@ -429,3 +433,72 @@ def products_filter_api(request):
             'sort': sort_by
         }
     })
+
+def cart_update_api(request):
+    """API endpoint for updating cart quantities"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        quantity = int(data.get('quantity', 1))
+        action = data.get('action', 'update')  # 'update', 'add', 'remove'
+        
+        if not product_id:
+            return JsonResponse({'success': False, 'message': 'Product ID required'})
+        
+        product = get_object_or_404(Product, id=product_id, is_active=True)
+        cart = _get_cart(request)
+        pid = str(product.id)
+        
+        if action == 'remove':
+            cart.pop(pid, None)
+            message = f"تمت إزالة {product.name} من السلة"
+        elif action == 'add':
+            if product.stock <= 0:
+                return JsonResponse({'success': False, 'message': 'المنتج غير متوفر حاليًا'})
+            cart[pid] = cart.get(pid, 0) + max(quantity, 1)
+            message = f"تمت إضافة {product.name} إلى السلة"
+        else:  # update
+            if quantity <= 0:
+                cart.pop(pid, None)
+                message = f"تمت إزالة {product.name} من السلة"
+            else:
+                if quantity > product.stock:
+                    return JsonResponse({
+                        'success': False, 
+                        'message': f'الكمية المطلوبة غير متوفرة. متوفر فقط {product.stock} قطعة'
+                    })
+                cart[pid] = quantity
+                message = "تم تحديث الكمية"
+        
+        _save_cart(request, cart)
+        
+        # Calculate cart summary
+        cart_count = sum(cart.values())
+        cart_total = 0
+        
+        if cart:
+            product_ids = [int(pid) for pid in cart.keys()]
+            products = Product.objects.filter(id__in=product_ids)
+            prod_map = {p.id: p for p in products}
+            
+            for pid_str, qty in cart.items():
+                p = prod_map.get(int(pid_str))
+                if p:
+                    unit_price = p.price_after_discount if hasattr(p, 'price_after_discount') else p.price
+                    cart_total += unit_price * qty
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'cart_count': cart_count,
+            'cart_total': f"{cart_total:,.2f}",
+            'item_quantity': cart.get(pid, 0),
+            'item_total': f"{(cart.get(pid, 0) * (product.price_after_discount if hasattr(product, 'price_after_discount') else product.price)):,.2f}" if cart.get(pid) else "0.00"
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'حدث خطأ في العملية'}, status=400)
