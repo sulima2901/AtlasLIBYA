@@ -1,0 +1,11 @@
+# Django framework
+Django>=4.2,<5.0
+
+# Database drivers
+PyMySQL>=1.1.0
+
+# Environment variable management
+python-dotenv>=0.19.0
+
+# Image processing (already mentioned in README)
+Pillow>=9.0.0

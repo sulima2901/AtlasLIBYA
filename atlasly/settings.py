@@ -1,17 +1,23 @@
+import os
 from pathlib import Path
-import pymysql
 
-pymysql.install_as_MySQLdb()
+# Load environment variables from .env file in development
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv is optional for production
+    pass
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'replace-me-in-production'
-DEBUG = True
+# Security settings from environment variables
+SECRET_KEY = os.environ.get('SECRET_KEY', 'replace-me-in-production')
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes', 'on')
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-]
+# Parse ALLOWED_HOSTS from comma-separated string
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -62,21 +68,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'atlasly.wsgi.application'
 
-# قاعدة البيانات
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'atlasly_db',
-        'USER': 'root',
-        'PASSWORD': 'Sss@king17890',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'use_unicode': True,
+# Database configuration with environment variables and SQLite fallback
+MYSQL_ENGINE = os.environ.get('MYSQL_ENGINE')
+
+if MYSQL_ENGINE == 'django.db.backends.mysql':
+    # MySQL configuration from environment variables
+    DATABASES = {
+        'default': {
+            'ENGINE': MYSQL_ENGINE,
+            'NAME': os.environ.get('MYSQL_NAME', 'atlasly_db'),
+            'USER': os.environ.get('MYSQL_USER', 'root'),
+            'PASSWORD': os.environ.get('MYSQL_PASSWORD', ''),
+            'HOST': os.environ.get('MYSQL_HOST', 'localhost'),
+            'PORT': os.environ.get('MYSQL_PORT', '3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'use_unicode': True,
+            }
         }
     }
-}
+else:
+    # Default to SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # تحققات كلمات المرور
 AUTH_PASSWORD_VALIDATORS = [
